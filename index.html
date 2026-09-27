@@ -136,7 +136,7 @@
         <div class="live-sync-badge">
           <div class="pulse-dot"></div>
           <div>
-            <div style="font-weight: 700; color: #FFFFFF;">samedigroup.co.uk</div>
+            <div style="font-weight: 700; color: var(--text-main);">samedigroup.co.uk</div>
             <div style="font-size: 10px; color: var(--gold-light);">Sync Active • London HA9</div>
           </div>
         </div>
@@ -324,7 +324,7 @@
           
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div>
-              <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF;">Quote & Ingestion Pipeline</h3>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main);">Quote & Ingestion Pipeline</h3>
               <p style="font-size: 12px; color: var(--text-secondary);">Direct pipeline capturing website contact quotes, commercial RFP inquiries, and Airbnb host requests</p>
             </div>
             <div style="display: flex; gap: 10px;">
@@ -436,7 +436,7 @@
           
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div>
-              <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF;">Cleaner Fleet & Compliance Roster</h3>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main);">Cleaner Fleet & Compliance Roster</h3>
               <p style="font-size: 12px; color: var(--text-secondary);">Direct integration with <span class="code">/careers/cleaners</span> recruitment pipeline, DBS checks, and mobile job cards</p>
             </div>
             <button class="btn btn-primary" onclick="app.openAddCleanerModal()">+ Onboard New Cleaner</button>
@@ -456,7 +456,7 @@
           
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div>
-              <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF;">Invoicing & Stripe Live Payments</h3>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main);">Invoicing & Stripe Live Payments</h3>
               <p style="font-size: 12px; color: var(--text-secondary);">Automated corporate billing, card-on-file settlements, and UK VAT compliance</p>
             </div>
             <div style="display: flex; gap: 10px;">
@@ -495,7 +495,7 @@
         <section id="view-integrations" class="crm-view">
           
           <div style="margin-bottom: 24px;">
-            <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF;">Website Sync & Webhook Verification</h3>
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main);">Website Sync & Webhook Verification</h3>
             <p style="font-size: 12px; color: var(--text-secondary);">Direct bridge resolving the defects discovered during the website audit</p>
           </div>
 
@@ -513,7 +513,7 @@
               <div style="display: flex; flex-direction: column; gap: 14px;">
                 <div style="background: var(--bg-input); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <strong style="color: #FFFFFF; font-size: 13px;">POST /api/contact/contact-us</strong>
+                    <strong style="color: var(--text-main); font-size: 13px;">POST /api/contact/contact-us</strong>
                     <span class="tag tag-green">Connected</span>
                   </div>
                   <p style="font-size: 11.5px; color: var(--text-secondary);">Ingests quote inquiries from website contact page and automatically generates a Kanban lead card.</p>
@@ -521,7 +521,7 @@
 
                 <div style="background: var(--bg-input); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <strong style="color: #FFFFFF; font-size: 13px;">POST /api/careers/register-cleaner</strong>
+                    <strong style="color: var(--text-main); font-size: 13px;">POST /api/careers/register-cleaner</strong>
                     <span class="tag tag-green">Fixed & Listening</span>
                   </div>
                   <p style="font-size: 11.5px; color: var(--text-secondary);">Fixes the broken form on <span class="code">/careers/cleaners</span> (which previously had 0 submissions and missing name tags).</p>
@@ -529,7 +529,7 @@
 
                 <div style="background: var(--bg-input); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <strong style="color: #FFFFFF; font-size: 13px;">Stripe Webhook Listener (checkout.session.completed)</strong>
+                    <strong style="color: var(--text-main); font-size: 13px;">Stripe Webhook Listener (checkout.session.completed)</strong>
                     <span class="tag tag-green">Live Mode Configured</span>
                   </div>
                   <p style="font-size: 11.5px; color: var(--text-secondary);">Listens for live Stripe checkout payments and marks invoices / appointments as automatically paid.</p>
@@ -725,7 +725,7 @@
   <div class="modal-overlay" id="modal-cleaner-mobile">
     <div class="modal-box" style="max-width: 440px; background: transparent; border: none; box-shadow: none;">
       <div style="text-align: right; margin-bottom: 8px;">
-        <button class="modal-close" style="color: #FFFFFF; font-size: 24px;" onclick="app.closeModal('modal-cleaner-mobile')">✕ Close Preview</button>
+        <button class="modal-close" style="color: var(--text-main); font-size: 24px;" onclick="app.closeModal('modal-cleaner-mobile')">✕ Close Preview</button>
       </div>
       
       <div class="mobile-phone-frame">
@@ -738,14 +738,14 @@
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <div class="brand-crest" style="width: 28px; height: 28px; font-size: 12px;">SG</div>
-              <strong style="color: #FFFFFF; font-size: 13px;">Samedi Cleaner App</strong>
+              <strong style="color: var(--text-main); font-size: 13px;">Samedi Cleaner App</strong>
             </div>
             <span class="tag tag-green" id="mobile-cleaner-status">On Shift</span>
           </div>
 
           <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
             <div style="font-size: 10px; color: var(--gold-primary); text-transform: uppercase; font-weight: 700;">Current Assignment</div>
-            <h4 style="font-size: 13.5px; font-weight: 800; color: #FFFFFF; margin: 4px 0;" id="mobile-job-title">Mayfair Penthouse Maintenance</h4>
+            <h4 style="font-size: 13.5px; font-weight: 800; color: var(--text-main); margin: 4px 0;" id="mobile-job-title">Mayfair Penthouse Maintenance</h4>
             <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;" id="mobile-job-addr">14 Grosvenor Square, W1K</div>
             <div style="font-size: 11px; color: var(--accent-amber); font-weight: 600;" id="mobile-job-access">🔑 Key in Concierge desk with Mr. Arthur</div>
           </div>
@@ -1025,7 +1025,7 @@
               <strong id="inv-preview-vat">£90.00</strong>
             </div>
             <div class="calc-total-row">
-              <span style="font-weight: 700; color: #FFFFFF;">Total Payable (GBP):</span>
+              <span style="font-weight: 700; color: var(--text-main);">Total Payable (GBP):</span>
               <span class="calc-price" id="inv-preview-total">£540.00</span>
             </div>
           </div>
@@ -1066,7 +1066,7 @@
         <div style="display: flex; gap: 14px; align-items: center; background: var(--bg-card); padding: 14px; border-radius: 12px; border: 1px solid var(--border-card); margin-bottom: 16px;">
           <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover;" alt="Applicant">
           <div>
-            <h4 style="color: #FFFFFF; font-size: 14px; font-weight: 700; margin-bottom: 2px;">James Davies</h4>
+            <h4 style="color: var(--text-main); font-size: 14px; font-weight: 700; margin-bottom: 2px;">James Davies</h4>
             <div style="font-size: 12px; color: var(--text-secondary);">Applied: Commercial & Office Cleaning • Wembley (HA9)</div>
             <div style="font-size: 11px; color: var(--gold-light); margin-top: 3px;">📞 07998 123456 • james.davies99@outlook.com</div>
           </div>
