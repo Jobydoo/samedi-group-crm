@@ -30,21 +30,30 @@ class SamediCRM {
 
   // Initialization
   init() {
+    this.initAuth();
     this.setupNavigation();
     this.setupGlobalSearch();
+    this.setupCalendarControls();
+    this.setupTodayFilter();
     this.renderCurrentView();
     this.populateCleanerSelects();
     this.updateBadges();
 
     // Setup global button handlers
-    document.getElementById("btn-open-quote-calc").addEventListener("click", () => {
-      this.openModal("modal-quote-calc");
-      this.recalcQuote();
-    });
+    const btnQuote = document.getElementById("btn-open-quote-calc");
+    if (btnQuote) {
+      btnQuote.addEventListener("click", () => {
+        this.openModal("modal-quote-calc");
+        this.recalcQuote();
+      });
+    }
 
-    document.getElementById("btn-quick-new-job").addEventListener("click", () => {
-      this.openNewJobModal();
-    });
+    const btnNewJob = document.getElementById("btn-quick-new-job");
+    if (btnNewJob) {
+      btnNewJob.addEventListener("click", () => {
+        this.openNewJobModal();
+      });
+    }
 
     // Calendar filter
     const boroughSelect = document.getElementById("cal-filter-borough");
@@ -492,7 +501,7 @@ class SamediCRM {
           <div>
             <h2 style="font-size: 20px; font-weight: 800; color: #1B2E1B; margin: 0;">SAMEDI GROUP</h2>
             <div style="font-size: 11px; color: #64748B;">Premium Cleaning & Facilities London</div>
-            <div style="font-size: 10px; color: #64748B;">Company No: ${this.data.company.crn} • VAT No: ${this.data.company.vat}</div>
+            <div style="font-size: 10px; color: #64748B;">CRN: ${this.data.company.crn} • VAT REG: ${this.data.company.vat}</div>
           </div>
           <div style="text-align: right;">
             <h3 style="font-size: 16px; font-weight: 800; color: #C9A84C; margin: 0;">TAX INVOICE</h3>
@@ -689,6 +698,12 @@ class SamediCRM {
   }
 
   simulatePhotoUpload() {
+    const btn = document.querySelector("#modal-cleaner-mobile button[onclick*='simulatePhotoUpload']");
+    if (btn) {
+      btn.innerText = "✓ Proof-of-Clean Photos Uploaded (4/4)";
+      btn.classList.add("btn-primary");
+      btn.classList.remove("btn-secondary");
+    }
     this.showToast("📷 4 Quality inspection photos uploaded to Samedi Cloud!");
   }
 
@@ -858,12 +873,18 @@ class SamediCRM {
   // ==========================================================================
   openModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add("open");
+    if (modal) {
+      modal.classList.add("open");
+      modal.classList.add("active");
+    }
   }
 
   closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove("open");
+    if (modal) {
+      modal.classList.remove("open");
+      modal.classList.remove("active");
+    }
   }
 
   // Toast System
@@ -919,6 +940,345 @@ class SamediCRM {
             tbody.appendChild(tr);
           });
         }
+      }
+    });
+  }
+
+  // ==========================================================================
+  // AUTHENTICATION & LOGIN CONTROLLER
+  // ==========================================================================
+  initAuth() {
+    const authScreen = document.getElementById("auth-screen");
+    const appContainer = document.getElementById("app-container");
+    const savedUser = localStorage.getItem("samedi_auth_user");
+
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        if (authScreen) authScreen.classList.add("hidden");
+        if (appContainer) appContainer.style.display = "flex";
+        this.updateUserProfile(user);
+      } catch (e) {
+        localStorage.removeItem("samedi_auth_user");
+        if (authScreen) authScreen.classList.remove("hidden");
+        if (appContainer) appContainer.style.display = "none";
+      }
+    } else {
+      if (authScreen) authScreen.classList.remove("hidden");
+      if (appContainer) appContainer.style.display = "none";
+    }
+
+    // Login Form Submit
+    const loginForm = document.getElementById("auth-login-form");
+    if (loginForm) {
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleLogin();
+      });
+    }
+
+    // 1-Click Demo Login
+    const btnDemo = document.getElementById("btn-quick-demo-login");
+    if (btnDemo) {
+      btnDemo.addEventListener("click", () => {
+        const emailEl = document.getElementById("login-email");
+        const passEl = document.getElementById("login-password");
+        if (emailEl) emailEl.value = "admin@samedigroup.co.uk";
+        if (passEl) passEl.value = "Samedi2026!";
+        this.handleLogin();
+      });
+    }
+
+    // Sign Out Button
+    const btnLogout = document.getElementById("btn-logout");
+    if (btnLogout) {
+      btnLogout.addEventListener("click", () => {
+        this.handleLogout();
+      });
+    }
+  }
+
+  handleLogin() {
+    const email = document.getElementById("login-email").value.trim();
+    const pass = document.getElementById("login-password").value.trim();
+    const errEl = document.getElementById("auth-error-msg");
+
+    if (!email || !pass) {
+      if (errEl) {
+        errEl.innerText = "Please provide both staff email and password.";
+        errEl.style.display = "block";
+      }
+      return;
+    }
+
+    const user = {
+      name: "Alexander Wright",
+      email: email,
+      role: "Operations Director",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+    };
+
+    localStorage.setItem("samedi_auth_user", JSON.stringify(user));
+
+    const authScreen = document.getElementById("auth-screen");
+    const appContainer = document.getElementById("app-container");
+    if (authScreen) authScreen.classList.add("hidden");
+    if (appContainer) appContainer.style.display = "flex";
+
+    this.updateUserProfile(user);
+    this.showToast(`✓ Authentication verified. Welcome to Operations, ${user.name}!`);
+  }
+
+  handleLogout() {
+    localStorage.removeItem("samedi_auth_user");
+    const authScreen = document.getElementById("auth-screen");
+    const appContainer = document.getElementById("app-container");
+    if (authScreen) authScreen.classList.remove("hidden");
+    if (appContainer) appContainer.style.display = "none";
+    this.showToast("Signed out. Terminal session locked.");
+  }
+
+  updateUserProfile(user) {
+    const nameEl = document.getElementById("header-user-name");
+    const roleEl = document.getElementById("header-user-role");
+    const avatarEl = document.getElementById("header-user-avatar");
+    if (nameEl) nameEl.innerText = user.name || "Alexander Wright";
+    if (roleEl) roleEl.innerText = user.role || "Operations Director";
+    if (avatarEl && user.avatar) avatarEl.src = user.avatar;
+  }
+
+  // ==========================================================================
+  // OPERATIONAL ACTION HANDLERS
+  // ==========================================================================
+  dismissAlert(btn) {
+    const card = btn.closest(".panel-card");
+    if (card) {
+      card.style.transition = "all 0.3s ease";
+      card.style.opacity = "0";
+      card.style.transform = "translateY(-10px)";
+      setTimeout(() => card.remove(), 300);
+      this.showToast("Alert dismissed.");
+    }
+  }
+
+  openCleanerVetting(cleanerId) {
+    this.openModal("modal-cleaner-vetting");
+  }
+
+  openNewLeadModal() {
+    this.openModal("modal-new-lead");
+  }
+
+  handleNewLeadSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById("new-lead-name").value.trim();
+    const company = document.getElementById("new-lead-company").value.trim() || "Private Residence";
+    const phone = document.getElementById("new-lead-phone").value.trim();
+    const email = document.getElementById("new-lead-email").value.trim();
+    const service = document.getElementById("new-lead-service").value;
+    const borough = document.getElementById("new-lead-borough").value.trim();
+    const budget = parseFloat(document.getElementById("new-lead-budget").value) || 250;
+    const frequency = document.getElementById("new-lead-freq").value;
+    const stage = document.getElementById("new-lead-stage").value || "new";
+    const notes = document.getElementById("new-lead-notes").value.trim();
+
+    const newLead = {
+      id: "lead-" + Date.now().toString().slice(-4),
+      name,
+      company,
+      phone,
+      email,
+      type: service.includes("Commercial") ? "Commercial" : "Residential",
+      propertyType: service,
+      borough,
+      service,
+      budget,
+      frequency,
+      stage,
+      source: "Manual Staff Entry",
+      notes: notes || "Direct enquiry logged via CRM",
+      createdAt: new Date().toISOString()
+    };
+
+    this.data.leads.unshift(newLead);
+    this.saveState();
+    this.closeModal("modal-new-lead");
+    document.getElementById("form-new-lead").reset();
+
+    if (this.currentView === "leads") {
+      this.renderKanban();
+    } else if (this.currentView === "dashboard") {
+      this.renderDashboard();
+    }
+
+    this.showToast(`✓ New lead logged: ${name} (${borough}) - £${budget}`);
+  }
+
+  openAddCleanerModal() {
+    this.openModal("modal-add-cleaner");
+  }
+
+  handleAddCleanerSubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById("cleaner-add-name").value.trim();
+    const role = document.getElementById("cleaner-add-role").value;
+    const phone = document.getElementById("cleaner-add-phone").value.trim();
+    const email = document.getElementById("cleaner-add-email").value.trim();
+    const boroughs = document.getElementById("cleaner-add-boroughs").value.split(",").map(b => b.trim());
+    const hourlyRate = parseFloat(document.getElementById("cleaner-add-rate").value) || 18.50;
+    const dbsStatus = document.getElementById("cleaner-add-dbs").value;
+    const rtw = document.getElementById("cleaner-add-rtw").value;
+    const skills = document.getElementById("cleaner-add-skills").value.split(",").map(s => s.trim()).filter(Boolean);
+
+    const newCleaner = {
+      id: "cleaner-" + (this.data.cleaners.length + 1),
+      name,
+      role,
+      rating: 5.0,
+      jobsCompleted: 0,
+      phone,
+      email,
+      boroughs: boroughs.length > 0 ? boroughs : ["Central London"],
+      skills: skills.length > 0 ? skills : ["Housekeeping", "Eco-Friendly Cleaning"],
+      status: "Active",
+      dbsStatus,
+      idVerified: true,
+      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80",
+      hourlyRate
+    };
+
+    this.data.cleaners.push(newCleaner);
+    this.saveState();
+    this.populateCleanerSelects();
+    this.closeModal("modal-add-cleaner");
+    document.getElementById("form-add-cleaner").reset();
+
+    if (this.currentView === "cleaners") {
+      this.renderCleaners();
+    }
+
+    this.showToast(`✓ Staff member ${name} onboarded and activated in dispatch roster!`);
+  }
+
+  openCreateInvoiceModal() {
+    this.openModal("modal-create-invoice");
+    this.updateInvoiceVatPreview();
+  }
+
+  updateInvoiceVatPreview() {
+    const amountEl = document.getElementById("inv-create-amount");
+    const netEl = document.getElementById("inv-preview-net");
+    const vatEl = document.getElementById("inv-preview-vat");
+    const totalEl = document.getElementById("inv-preview-total");
+
+    if (!amountEl || !netEl) return;
+    const net = parseFloat(amountEl.value) || 0;
+    const vat = net * 0.20;
+    const total = net + vat;
+
+    netEl.innerText = `£${net.toFixed(2)}`;
+    vatEl.innerText = `£${vat.toFixed(2)}`;
+    totalEl.innerText = `£${total.toFixed(2)}`;
+  }
+
+  handleCreateInvoiceSubmit(e) {
+    e.preventDefault();
+    const client = document.getElementById("inv-create-client").value.trim();
+    const company = document.getElementById("inv-create-company").value.trim() || client;
+    const email = document.getElementById("inv-create-email").value.trim();
+    const desc = document.getElementById("inv-create-desc").value.trim();
+    const net = parseFloat(document.getElementById("inv-create-amount").value) || 0;
+    const dueDate = document.getElementById("inv-create-duedate").value || "2026-10-10";
+    const terms = document.getElementById("inv-create-terms").value;
+
+    const vat = net * 0.20;
+    const total = net + vat;
+    const invId = "INV-2026-0" + (this.data.invoices.length + 45);
+
+    const newInvoice = {
+      id: invId,
+      jobId: "job-manual",
+      clientName: client,
+      company,
+      email,
+      date: new Date().toISOString().split("T")[0],
+      dueDate,
+      items: [
+        { desc, qty: 1, rate: net, total: net }
+      ],
+      subtotal: net,
+      vat,
+      total,
+      status: "Sent",
+      stripeSessionId: "cs_live_" + Math.random().toString(36).substring(2, 14)
+    };
+
+    this.data.invoices.unshift(newInvoice);
+    this.saveState();
+    this.closeModal("modal-create-invoice");
+    document.getElementById("form-create-invoice").reset();
+
+    if (this.currentView === "invoices") {
+      this.renderInvoices();
+    }
+
+    this.showToast(`✓ UK Statutory VAT Invoice ${invId} generated for £${total.toFixed(2)}`);
+    this.viewInvoice(invId);
+  }
+
+  setupCalendarControls() {
+    const calPrev = document.getElementById("cal-prev");
+    const calNext = document.getElementById("cal-next");
+    const calToday = document.getElementById("cal-today");
+    const calTitle = document.getElementById("cal-date-label") || document.querySelector(".calendar-nav h4");
+
+    if (calPrev) {
+      calPrev.addEventListener("click", () => {
+        if (calTitle) calTitle.innerText = "Week of Sep 20 – Sep 26, 2026";
+        this.showToast("Loaded Schedule: 20 Sep – 26 Sep 2026");
+      });
+    }
+    if (calNext) {
+      calNext.addEventListener("click", () => {
+        if (calTitle) calTitle.innerText = "Week of Oct 04 – Oct 10, 2026";
+        this.showToast("Loaded Schedule: 04 Oct – 10 Oct 2026");
+      });
+    }
+    if (calToday) {
+      calToday.addEventListener("click", () => {
+        if (calTitle) calTitle.innerText = "Week of Sep 27 – Oct 3, 2026";
+        this.showToast("Reset to Current Week: 27 Sep – 03 Oct 2026");
+      });
+    }
+  }
+
+  setupTodayFilter() {
+    const btn = document.getElementById("btn-filter-today");
+    if (!btn) return;
+    let filterActive = false;
+
+    btn.addEventListener("click", () => {
+      filterActive = !filterActive;
+      const tbody = document.getElementById("dash-jobs-tbody");
+      if (!tbody) return;
+
+      if (filterActive) {
+        btn.innerText = "Show All Scheduled Jobs";
+        btn.classList.add("btn-primary");
+        btn.classList.remove("btn-secondary");
+        const rows = tbody.querySelectorAll("tr");
+        rows.forEach(r => {
+          const txt = r.innerText;
+          r.style.display = txt.includes("Today") || txt.includes("2026-09-27") || txt.includes("Mayfair") || txt.includes("Redchurch") ? "" : "none";
+        });
+        this.showToast("Filtering table to Today's London assignments");
+      } else {
+        btn.innerText = "View Today Only";
+        btn.classList.remove("btn-primary");
+        btn.classList.add("btn-secondary");
+        const rows = tbody.querySelectorAll("tr");
+        rows.forEach(r => r.style.display = "");
+        this.showToast("Showing all scheduled jobs");
       }
     });
   }

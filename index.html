@@ -9,7 +9,70 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+  <!-- ============================================================== -->
+  <!-- EXECUTIVE AUTHENTICATION & LOGIN PORTAL -->
+  <!-- ============================================================== -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-crest">SG</div>
+        <h2 class="auth-title">Samedi Group London</h2>
+        <p class="auth-sub">Operations & Field Service Executive Portal</p>
+      </div>
+
+      <div class="auth-error" id="auth-error-msg"></div>
+
+      <form id="auth-login-form">
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label class="form-label" style="font-size: 11.5px;">Staff / Admin Email Address</label>
+          <input type="email" class="form-control" id="login-email" required value="admin@samedigroup.co.uk" placeholder="e.g. admin@samedigroup.co.uk">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="form-label" style="font-size: 11.5px; margin-bottom: 0;">Password</label>
+            <span style="font-size: 11px; color: var(--gold-light); cursor: pointer;" onclick="document.getElementById('login-password').value='Samedi2026!'">Autofill</span>
+          </div>
+          <input type="password" class="form-control" id="login-password" required value="Samedi2026!" placeholder="••••••••">
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; font-size: 12px; color: var(--text-secondary);">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="auth-remember" checked style="accent-color: var(--gold-primary);">
+            <span>Remember terminal</span>
+          </label>
+          <span style="color: var(--text-muted); font-size: 11px;">SSL 256-Bit Encrypted</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btn-login-submit" style="width: 100%; padding: 12px; font-size: 13px; font-weight: 700;">
+          Sign In to Operations Command
+        </button>
+
+        <button type="button" class="btn-demo-quick" id="btn-quick-demo-login">
+          ⚡ Quick 1-Click Demo Login (Executive Admin)
+        </button>
+      </form>
+
+      <div class="auth-demo-box">
+        <div class="auth-demo-badge">
+          <span>🔐 Demo Credentials</span>
+          <span>HMRC & DBS Ready</span>
+        </div>
+        <div class="auth-cred-row">
+          <span>Email:</span>
+          <span class="auth-cred-val">admin@samedigroup.co.uk</span>
+        </div>
+        <div class="auth-cred-row">
+          <span>Password:</span>
+          <span class="auth-cred-val">Samedi2026!</span>
+        </div>
+        <div class="auth-cred-row">
+          <span>Access Level:</span>
+          <strong style="color: var(--accent-green);">Full Director & Financial Admin</strong>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="app-container">
 
@@ -107,6 +170,22 @@
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
             Schedule Job
           </button>
+
+          <!-- User Profile & Sign Out -->
+          <div class="user-profile-menu">
+            <div class="user-avatar-wrap">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" class="user-avatar-img" alt="User Avatar" id="header-user-avatar">
+              <div class="user-status-dot"></div>
+            </div>
+            <div class="user-text-meta">
+              <div class="user-display-name" id="header-user-name">Alexander Wright</div>
+              <div class="user-role-badge" id="header-user-role">Operations Director</div>
+            </div>
+            <button class="btn-logout" id="btn-logout" title="Lock session & sign out">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
@@ -703,6 +782,325 @@
       </div>
       <div class="modal-body" id="invoice-printable-body">
         <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ADD MANUAL LEAD -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-new-lead">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <div>
+          <h3>+ Log New Client Enquiry / Lead</h3>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Direct phone inquiry, email booking, or corporate inquiry</p>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-new-lead')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-new-lead" onsubmit="app.handleNewLeadSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Client Full Name *</label>
+              <input type="text" class="form-control" id="new-lead-name" required placeholder="e.g. Richard Davenport">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company / Estate (Optional)</label>
+              <input type="text" class="form-control" id="new-lead-company" placeholder="e.g. Kensington Properties Ltd">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Contact Phone *</label>
+              <input type="tel" class="form-control" id="new-lead-phone" required placeholder="e.g. 07700 900821">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address *</label>
+              <input type="email" class="form-control" id="new-lead-email" required placeholder="e.g. r.davenport@gmail.com">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Service Required *</label>
+              <select class="form-control" id="new-lead-service" required>
+                <option value="Commercial Office Cleaning">Commercial Office Cleaning</option>
+                <option value="Luxury Residential Deep Clean">Luxury Residential Deep Clean</option>
+                <option value="Airbnb Turnover & Linen">Airbnb Turnover & Linen</option>
+                <option value="End of Tenancy Deposit-Back">End of Tenancy Deposit-Back</option>
+                <option value="Commercial Gym / Leisure Facility">Commercial Gym / Leisure Facility</option>
+                <option value="Carpet & Upholstery Extraction">Carpet & Upholstery Extraction</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">London Borough / Postcode *</label>
+              <input type="text" class="form-control" id="new-lead-borough" required placeholder="e.g. Westminster (W1) or Brent (HA9)">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Estimated Budget (£) *</label>
+              <input type="number" class="form-control" id="new-lead-budget" required value="280">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cleaning Frequency *</label>
+              <select class="form-control" id="new-lead-freq" required>
+                <option value="One-Off Deep Clean">One-Off Deep Clean</option>
+                <option value="Daily Contract (Nightly)">Daily Contract (Nightly)</option>
+                <option value="Weekly Housekeeping">Weekly Housekeeping</option>
+                <option value="Fortnightly">Fortnightly</option>
+                <option value="Turnover on Checkout">Turnover on Checkout</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Initial Stage</label>
+            <select class="form-control" id="new-lead-stage">
+              <option value="new">New Enquiry</option>
+              <option value="quote_sent">Quote Sent</option>
+              <option value="survey">Site Survey Booked</option>
+              <option value="contract_signed">Contract Signed / Booked</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Client Notes & Requirements</label>
+            <textarea class="form-control" id="new-lead-notes" rows="2" placeholder="e.g. Key access with porter, high ceilings, needs neutral pH supplies..."></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-new-lead')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create Lead</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ONBOARD NEW CLEANER -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-add-cleaner">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <div>
+          <h3>+ Onboard New Cleaner / Field Specialist</h3>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Register vetted staff into the London dispatch fleet</p>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-add-cleaner')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-add-cleaner" onsubmit="app.handleAddCleanerSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Legal Name *</label>
+              <input type="text" class="form-control" id="cleaner-add-name" required placeholder="e.g. Michael O'Connor">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role Title *</label>
+              <select class="form-control" id="cleaner-add-role" required>
+                <option value="Senior Housekeeper">Senior Housekeeper</option>
+                <option value="Commercial Facilities Specialist">Commercial Facilities Specialist</option>
+                <option value="End of Tenancy & Deep Clean Pro">End of Tenancy & Deep Clean Pro</option>
+                <option value="Carpet & Floor Restoration Tech">Carpet & Floor Restoration Tech</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Contact Mobile *</label>
+              <input type="tel" class="form-control" id="cleaner-add-phone" required placeholder="e.g. 07890 123456">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address *</label>
+              <input type="email" class="form-control" id="cleaner-add-email" required placeholder="e.g. m.oconnor@samedigroup.co.uk">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Coverage Boroughs *</label>
+              <input type="text" class="form-control" id="cleaner-add-boroughs" required placeholder="e.g. Westminster, Kensington, Camden">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hourly Pay Rate (£/hr) *</label>
+              <input type="number" step="0.5" class="form-control" id="cleaner-add-rate" required value="18.50">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">DBS Background Check *</label>
+              <select class="form-control" id="cleaner-add-dbs" required>
+                <option value="Verified (Enhanced DBS)">Verified (Enhanced DBS)</option>
+                <option value="Verified (Standard DBS)">Verified (Standard DBS)</option>
+                <option value="Check In Progress">Check In Progress</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Right to Work Status *</label>
+              <select class="form-control" id="cleaner-add-rtw" required>
+                <option value="UK Passport Verified">UK Passport Verified</option>
+                <option value="Settled Status (Share Code Verified)">Settled Status (Share Code Verified)</option>
+                <option value="Biometric Residence Permit">Biometric Residence Permit</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Specialist Skills & Equipment</label>
+            <input type="text" class="form-control" id="cleaner-add-skills" placeholder="e.g. Marble Care, Carpet Hot Water Extraction, Oven Valeting">
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-add-cleaner')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Register Cleaner</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: CREATE UK STATUTORY INVOICE -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-create-invoice">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <div>
+          <h3>+ Create UK Statutory VAT Invoice</h3>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Compliant with HMRC & UK Companies House regulations</p>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-create-invoice')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-create-invoice" onsubmit="app.handleCreateInvoiceSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Client / Attention *</label>
+              <input type="text" class="form-control" id="inv-create-client" required placeholder="e.g. David Sterling">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company / Estate</label>
+              <input type="text" class="form-control" id="inv-create-company" placeholder="e.g. Sterling Capital Ltd">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Billing Email *</label>
+            <input type="email" class="form-control" id="inv-create-email" required placeholder="e.g. accounts@sterlingcap.co.uk">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Item / Service Description *</label>
+            <input type="text" class="form-control" id="inv-create-desc" required placeholder="e.g. Monthly Commercial Cleaning & Facilities Maintenance">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Net Subtotal (£ ex. VAT) *</label>
+              <input type="number" step="0.01" class="form-control" id="inv-create-amount" required value="450" oninput="app.updateInvoiceVatPreview()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Due Date *</label>
+              <input type="date" class="form-control" id="inv-create-duedate" required value="2026-10-10">
+            </div>
+          </div>
+
+          <div class="calc-box" style="margin-top: 10px; margin-bottom: 16px;">
+            <div class="calc-row">
+              <span>Net Amount:</span>
+              <strong id="inv-preview-net">£450.00</strong>
+            </div>
+            <div class="calc-row">
+              <span>UK VAT (20% standard rate):</span>
+              <strong id="inv-preview-vat">£90.00</strong>
+            </div>
+            <div class="calc-total-row">
+              <span style="font-weight: 700; color: #FFFFFF;">Total Payable (GBP):</span>
+              <span class="calc-price" id="inv-preview-total">£540.00</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Payment Terms</label>
+            <select class="form-control" id="inv-create-terms">
+              <option value="Immediate Stripe Card / Apple Pay">Immediate Stripe Card / Apple Pay</option>
+              <option value="7 Days BACS Bank Transfer">7 Days BACS Bank Transfer</option>
+              <option value="14 Days Net B2B">14 Days Net B2B</option>
+              <option value="30 Days Commercial Credit">30 Days Commercial Credit</option>
+            </select>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-create-invoice')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Generate & Issue Invoice</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: CLEANER VETTING & DBS VERIFICATION -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-cleaner-vetting">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <div>
+          <h3>Cleaner DBS & Right-to-Work Vetting</h3>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Compliance review for incoming application</p>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-cleaner-vetting')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="display: flex; gap: 14px; align-items: center; background: var(--bg-card); padding: 14px; border-radius: 12px; border: 1px solid var(--border-card); margin-bottom: 16px;">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover;" alt="Applicant">
+          <div>
+            <h4 style="color: #FFFFFF; font-size: 14px; font-weight: 700; margin-bottom: 2px;">James Davies</h4>
+            <div style="font-size: 12px; color: var(--text-secondary);">Applied: Commercial & Office Cleaning • Wembley (HA9)</div>
+            <div style="font-size: 11px; color: var(--gold-light); margin-top: 3px;">📞 07998 123456 • james.davies99@outlook.com</div>
+          </div>
+        </div>
+
+        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+          Statutory Compliance Verification
+        </div>
+
+        <div style="background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>1. UK Identity Document:</span>
+            <span style="color: var(--accent-green); font-weight: 700;">✓ UK Passport Verified</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>2. Proof of London Address:</span>
+            <span style="color: var(--accent-green); font-weight: 700;">✓ Council Tax Bill Verified</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>3. Enhanced DBS Certificate:</span>
+            <span style="color: var(--gold-light); font-weight: 700;">Ref #DBS-2026-98104 (Clear)</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>4. Right to Work in the UK:</span>
+            <span style="color: var(--accent-green); font-weight: 700;">✓ Confirmed (Indefinite)</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button class="btn btn-secondary" onclick="app.closeModal('modal-cleaner-vetting')">Close</button>
+          <button class="btn btn-primary" onclick="app.approveCleanerApplicant('cleaner-5'); app.closeModal('modal-cleaner-vetting');">
+            ✓ Approve & Activate in Fleet
+          </button>
+        </div>
       </div>
     </div>
   </div>
