@@ -588,6 +588,7 @@
                       <th>Recipient / Job Site</th>
                       <th>Reason / Notes</th>
                       <th>Authorized By</th>
+                      <th>Action</th>
                     </tr>
                   </thead>
                   <tbody id="movements-tbody">
@@ -892,7 +893,12 @@
               <div class="brand-crest" style="width: 28px; height: 28px; font-size: 12px;">SG</div>
               <strong style="color: var(--text-main); font-size: 13px;">Samedi Cleaner App</strong>
             </div>
-            <span class="tag tag-green" id="mobile-cleaner-status">On Shift</span>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn btn-secondary btn-sm" onclick="app.editJobFromMobileView()">
+                ✏️ Modify Job
+              </button>
+              <span class="tag tag-green" id="mobile-cleaner-status">On Shift</span>
+            </div>
           </div>
 
           <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
@@ -930,7 +936,15 @@
     <div class="modal-box" style="max-width: 650px;">
       <div class="modal-header">
         <h3 id="inv-modal-title">UK Statutory VAT Invoice</h3>
-        <button class="modal-close" onclick="app.closeModal('modal-invoice-view')">✕</button>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn btn-secondary btn-sm" id="btn-edit-viewed-inv" onclick="app.editInvoiceFromView()">
+            ✏️ Modify Invoice
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="window.print()">
+            🖨️ Print
+          </button>
+          <button class="modal-close" onclick="app.closeModal('modal-invoice-view')">✕</button>
+        </div>
       </div>
       <div class="modal-body" id="invoice-printable-body">
         <!-- Rendered by JS -->
@@ -1392,6 +1406,495 @@
           </div>
         </div>
       </form>
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: EDIT / MODIFY JOB -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-edit-job">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">✏️</span>
+          <div>
+            <h3>Modify Dispatched Job (<span id="edit-job-id-label">#job-801</span>)</h3>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Update schedule, assignment, pricing, or instructions</p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-edit-job')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-edit-job" onsubmit="app.handleEditJobSubmit(event)">
+          <input type="hidden" id="edit-job-id">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Job Title *</label>
+              <input type="text" class="form-control" id="edit-job-title" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Client Name *</label>
+              <input type="text" class="form-control" id="edit-job-client" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Service Type *</label>
+              <input type="text" class="form-control" id="edit-job-service" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">London Borough *</label>
+              <input type="text" class="form-control" id="edit-job-borough" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Full Property Address *</label>
+            <input type="text" class="form-control" id="edit-job-address" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date *</label>
+              <input type="date" class="form-control" id="edit-job-date" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time Window *</label>
+              <input type="text" class="form-control" id="edit-job-time" required placeholder="e.g. 09:00 - 13:00">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Cleaner Assigned *</label>
+              <select class="form-control" id="edit-job-cleaner-select" required>
+                <!-- populated by JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Price (£ Net) *</label>
+              <input type="number" class="form-control" id="edit-job-amount" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Dispatch Status *</label>
+              <select class="form-control" id="edit-job-status" required>
+                <option value="Scheduled">Scheduled</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Access / Key Instructions</label>
+              <input type="text" class="form-control" id="edit-job-access">
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-light); flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="btn btn-secondary" style="color: #DC2626;" onclick="app.deleteJob(document.getElementById('edit-job-id').value); app.closeModal('modal-edit-job');">
+              🗑️ Delete Job
+            </button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="app.duplicateJob(document.getElementById('edit-job-id').value); app.closeModal('modal-edit-job');">
+                📋 Duplicate
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-edit-job')">Cancel</button>
+              <button type="submit" class="btn btn-primary">✓ Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: EDIT / MODIFY LEAD OR QUOTE (DEVIS) -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-edit-lead">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">✏️</span>
+          <div>
+            <h3>Modify Quote / Lead (<span id="edit-lead-id-label">#lead-1</span>)</h3>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Update client details, quote amount, or pipeline stage</p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-edit-lead')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-edit-lead" onsubmit="app.handleEditLeadSubmit(event)">
+          <input type="hidden" id="edit-lead-id">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Client Name *</label>
+              <input type="text" class="form-control" id="edit-lead-name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company / Estate</label>
+              <input type="text" class="form-control" id="edit-lead-company">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Contact Phone *</label>
+              <input type="tel" class="form-control" id="edit-lead-phone" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address *</label>
+              <input type="email" class="form-control" id="edit-lead-email" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Service Required *</label>
+              <input type="text" class="form-control" id="edit-lead-service" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">London Borough *</label>
+              <input type="text" class="form-control" id="edit-lead-borough" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Estimated Budget / Quote (£) *</label>
+              <input type="number" class="form-control" id="edit-lead-budget" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Pipeline Stage *</label>
+              <select class="form-control" id="edit-lead-stage" required>
+                <option value="new">New Enquiry</option>
+                <option value="survey">Site Survey Booked</option>
+                <option value="quote_sent">Quote Sent</option>
+                <option value="contract_signed">Contract Signed / Booked</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Notes & Specifications</label>
+            <textarea class="form-control" id="edit-lead-notes" rows="2"></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-light); flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary" style="color: #DC2626;" onclick="app.deleteLead(document.getElementById('edit-lead-id').value); app.closeModal('modal-edit-lead');">
+                🗑️ Delete
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="app.convertLeadToInvoice(document.getElementById('edit-lead-id').value); app.closeModal('modal-edit-lead');">
+                🧾 Create Invoice
+              </button>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="app.duplicateLead(document.getElementById('edit-lead-id').value); app.closeModal('modal-edit-lead');">
+                📋 Duplicate
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-edit-lead')">Cancel</button>
+              <button type="submit" class="btn btn-primary">✓ Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: EDIT / MODIFY INVOICE -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-edit-invoice">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">✏️</span>
+          <div>
+            <h3>Modify Invoice (<span id="edit-inv-id-label">INV-2026-088</span>)</h3>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Update billing details, line items, VAT, or payment status</p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-edit-invoice')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-edit-invoice" onsubmit="app.handleEditInvoiceSubmit(event)">
+          <input type="hidden" id="edit-inv-id">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Client / Billed To *</label>
+              <input type="text" class="form-control" id="edit-inv-client" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company / Estate</label>
+              <input type="text" class="form-control" id="edit-inv-company">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Billing Email *</label>
+              <input type="email" class="form-control" id="edit-inv-email" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payment Status *</label>
+              <select class="form-control" id="edit-inv-status" required>
+                <option value="Paid">Paid</option>
+                <option value="Sent">Sent (Pending Payment)</option>
+                <option value="Draft">Draft</option>
+                <option value="Overdue">Overdue</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Service Description *</label>
+            <input type="text" class="form-control" id="edit-inv-desc" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Net Subtotal (£ Excl. VAT) *</label>
+              <input type="number" step="0.01" class="form-control" id="edit-inv-net" required oninput="app.recalcEditInvoiceTotals()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Due Date *</label>
+              <input type="date" class="form-control" id="edit-inv-duedate" required>
+            </div>
+          </div>
+
+          <div class="calc-box" style="margin-top: 6px; margin-bottom: 14px;">
+            <div class="calc-row">
+              <span>Net Subtotal:</span>
+              <strong id="edit-inv-preview-net">£0.00</strong>
+            </div>
+            <div class="calc-row">
+              <span>UK VAT (20%):</span>
+              <strong id="edit-inv-preview-vat">£0.00</strong>
+            </div>
+            <div class="calc-total-row">
+              <span style="font-weight: 700; color: var(--text-main);">Gross Total Payable (GBP):</span>
+              <span class="calc-price" id="edit-inv-preview-total">£0.00</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Payment Terms</label>
+            <select class="form-control" id="edit-inv-terms">
+              <option value="Immediate Stripe Card / Apple Pay">Immediate Stripe Card / Apple Pay</option>
+              <option value="7 Days BACS Bank Transfer">7 Days BACS Bank Transfer</option>
+              <option value="14 Days Net B2B">14 Days Net B2B</option>
+              <option value="30 Days Commercial Credit">30 Days Commercial Credit</option>
+            </select>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-light); flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="btn btn-secondary" style="color: #DC2626;" onclick="app.deleteInvoice(document.getElementById('edit-inv-id').value); app.closeModal('modal-edit-invoice');">
+              🗑️ Delete Invoice
+            </button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="app.duplicateInvoice(document.getElementById('edit-inv-id').value); app.closeModal('modal-edit-invoice');">
+                📋 Duplicate
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-edit-invoice')">Cancel</button>
+              <button type="submit" class="btn btn-primary">✓ Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: EDIT / MODIFY CLEANER -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-edit-cleaner">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">✏️</span>
+          <div>
+            <h3>Modify Cleaner Profile (<span id="edit-cleaner-name-label">Sarah Jenkins</span>)</h3>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Update staff contact, pay rates, DBS status, and skills</p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-edit-cleaner')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-edit-cleaner" onsubmit="app.handleEditCleanerSubmit(event)">
+          <input type="hidden" id="edit-cleaner-id">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Full Legal Name *</label>
+              <input type="text" class="form-control" id="edit-cleaner-name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role Title *</label>
+              <input type="text" class="form-control" id="edit-cleaner-role" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Contact Mobile *</label>
+              <input type="tel" class="form-control" id="edit-cleaner-phone" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address *</label>
+              <input type="email" class="form-control" id="edit-cleaner-email" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Boroughs Covered *</label>
+              <input type="text" class="form-control" id="edit-cleaner-boroughs" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hourly Pay Rate (£/hr) *</label>
+              <input type="number" step="0.5" class="form-control" id="edit-cleaner-rate" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">DBS Background Check *</label>
+              <select class="form-control" id="edit-cleaner-dbs" required>
+                <option value="Verified (Enhanced DBS)">Verified (Enhanced DBS)</option>
+                <option value="Verified (Standard DBS)">Verified (Standard DBS)</option>
+                <option value="Check In Progress">Check In Progress</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Operational Status *</label>
+              <select class="form-control" id="edit-cleaner-status" required>
+                <option value="On Shift">On Shift</option>
+                <option value="Off Shift">Off Shift</option>
+                <option value="Applicant (Awaiting DBS)">Applicant (Awaiting DBS)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Specialist Skills</label>
+            <input type="text" class="form-control" id="edit-cleaner-skills">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-light); flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="btn btn-secondary" style="color: #DC2626;" onclick="app.deleteCleaner(document.getElementById('edit-cleaner-id').value); app.closeModal('modal-edit-cleaner');">
+              🗑️ Delete Cleaner
+            </button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="app.duplicateCleaner(document.getElementById('edit-cleaner-id').value); app.closeModal('modal-edit-cleaner');">
+                📋 Duplicate
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-edit-cleaner')">Cancel</button>
+              <button type="submit" class="btn btn-primary">✓ Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: EDIT / MODIFY INVENTORY SKU -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-edit-inventory">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">✏️</span>
+          <div>
+            <h3>Modify Inventory SKU (<span id="edit-inv-sku-label">SKU-CHM-01</span>)</h3>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Update stock levels, reorder threshold, or unit cost</p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-edit-inventory')">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-edit-inventory" onsubmit="app.handleEditInventorySubmit(event)">
+          <input type="hidden" id="edit-inv-orig-sku">
+
+          <div class="form-group">
+            <label class="form-label">Material / Item Description *</label>
+            <input type="text" class="form-control" id="edit-inv-name" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select class="form-control" id="edit-inv-category" required>
+                <option value="Chemicals">Chemicals</option>
+                <option value="Equipment">Equipment</option>
+                <option value="Consumables">Consumables</option>
+                <option value="Linen & Airbnb">Linen & Airbnb</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Packaging / Unit Type *</label>
+              <input type="text" class="form-control" id="edit-inv-unit" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Depot Stock Quantity *</label>
+              <input type="number" class="form-control" id="edit-inv-quantity" required min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Safety Alert Threshold *</label>
+              <input type="number" class="form-control" id="edit-inv-min" required min="0">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Unit Cost (£ Excl. VAT) *</label>
+              <input type="number" step="0.01" class="form-control" id="edit-inv-cost" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Depot Location *</label>
+              <input type="text" class="form-control" id="edit-inv-location" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Preferred Supplier</label>
+            <input type="text" class="form-control" id="edit-inv-supplier">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--border-light); flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="btn btn-secondary" style="color: #DC2626;" onclick="app.deleteInventory(document.getElementById('edit-inv-orig-sku').value); app.closeModal('modal-edit-inventory');">
+              🗑️ Delete Item
+            </button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary" onclick="app.duplicateInventory(document.getElementById('edit-inv-orig-sku').value); app.closeModal('modal-edit-inventory');">
+                📋 Duplicate
+              </button>
+              <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-edit-inventory')">Cancel</button>
+              <button type="submit" class="btn btn-primary">✓ Save Changes</button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 

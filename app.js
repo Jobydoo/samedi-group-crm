@@ -126,6 +126,8 @@ class SamediCRM {
         const targetView = item.getAttribute("data-view");
         if (targetView) {
           this.switchView(targetView);
+          const sidebar = document.querySelector(".sidebar");
+          if (sidebar) sidebar.classList.remove("mobile-open");
         }
       });
     });
@@ -230,6 +232,14 @@ class SamediCRM {
 
     todayJobs.forEach(job => {
       const tr = document.createElement("tr");
+      tr.className = "clickable-row";
+      tr.title = "Click to inspect & modify dispatched job";
+      tr.onclick = (e) => {
+        if (!e.target.closest("button")) {
+          this.openEditJobModal(job.id);
+        }
+      };
+
       const statusClass = job.status === "In Progress" ? "tag-amber" : (job.status === "Completed" ? "tag-green" : "tag-residential");
       const serviceTagClass = job.service.includes("Commercial") ? "tag-commercial" : (job.service.includes("Airbnb") ? "tag-airbnb" : "tag-residential");
 
@@ -239,7 +249,10 @@ class SamediCRM {
           <div style="font-size: 11px; color: var(--text-muted);">${job.borough}</div>
         </td>
         <td>
-          <div style="font-weight: 700;">${job.title}</div>
+          <div style="font-weight: 700; display: flex; align-items: center; gap: 6px;">
+            <span>${job.title}</span>
+            <span class="pen-badge" style="font-size: 10px; padding: 1px 5px;" onclick="event.stopPropagation(); app.openEditJobModal('${job.id}')" title="Modify Job">✏️ Edit</span>
+          </div>
           <div style="font-size: 11px; color: var(--text-secondary);">${job.client} • <span class="tag ${serviceTagClass}">${job.service.split(' ')[0]}</span></div>
         </td>
         <td>
@@ -258,9 +271,20 @@ class SamediCRM {
           <span class="tag ${statusClass}">${job.status}</span>
         </td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="app.openCleanerMobile('${job.id}')">
-            Mobile Card
-          </button>
+          <div class="action-btn-group" onclick="event.stopPropagation()">
+            <button class="btn-icon-action btn-action-edit" onclick="app.openEditJobModal('${job.id}')" title="Modify Job (✏️ Edit)">
+              ✏️
+            </button>
+            <button class="btn-icon-action btn-action-duplicate" onclick="app.duplicateJob('${job.id}')" title="Duplicate Job (📋 Duplicate)">
+              📋
+            </button>
+            <button class="btn-icon-action" onclick="app.openCleanerMobile('${job.id}')" title="Cleaner Mobile Job Card (📱 Mobile)">
+              📱
+            </button>
+            <button class="btn-icon-action btn-action-delete" onclick="app.deleteJob('${job.id}')" title="Delete Job (🗑️ Delete)">
+              🗑️
+            </button>
+          </div>
         </td>
       `;
       tbody.appendChild(tr);
@@ -272,18 +296,32 @@ class SamediCRM {
       leadsList.innerHTML = "";
       this.data.leads.slice(0, 3).forEach(lead => {
         const item = document.createElement("div");
-        item.style.cssText = "background: var(--bg-input); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-light);";
+        item.className = "clickable-card";
+        item.style.cssText = "background: var(--bg-input); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--border-light); cursor: pointer; transition: all 0.2s ease;";
+        item.onclick = (e) => {
+          if (!e.target.closest("button")) {
+            this.openEditLeadModal(lead.id);
+          }
+        };
         item.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-            <strong style="color: #FFFFFF; font-size: 13px;">${lead.name}</strong>
+            <strong style="color: #FFFFFF; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+              <span>${lead.name}</span>
+              <span class="pen-badge" style="font-size: 9px; padding: 1px 4px;" onclick="event.stopPropagation(); app.openEditLeadModal('${lead.id}')">✏️</span>
+            </strong>
             <span style="font-weight: 800; color: var(--gold-light); font-size: 12px;">£${lead.budget}</span>
           </div>
           <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">
             ${lead.propertyType} • ${lead.borough}
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
             <span class="tag tag-airbnb">${lead.source}</span>
-            <button class="btn btn-primary btn-sm" onclick="app.quickConvertLead('${lead.id}')">Send Quote</button>
+            <div class="action-btn-group" onclick="event.stopPropagation()">
+              <button class="btn-icon-action btn-action-edit" onclick="app.openEditLeadModal('${lead.id}')" title="Modify Lead">✏️</button>
+              <button class="btn-icon-action btn-action-duplicate" onclick="app.duplicateLead('${lead.id}')" title="Duplicate Lead">📋</button>
+              <button class="btn btn-primary btn-sm" onclick="app.quickConvertLead('${lead.id}')" style="font-size: 11px; padding: 3px 8px;">Send Quote</button>
+              <button class="btn-icon-action btn-action-delete" onclick="app.deleteLead('${lead.id}')" title="Delete Lead">🗑️</button>
+            </div>
           </div>
         `;
         leadsList.appendChild(item);
@@ -308,13 +346,23 @@ class SamediCRM {
 
       leadsInStage.forEach(lead => {
         const card = document.createElement("div");
-        card.className = "lead-card";
+        card.className = "lead-card clickable-card";
+        card.title = "Click anywhere on this card to modify details";
+        card.onclick = (e) => {
+          if (!e.target.closest("button")) {
+            this.openEditLeadModal(lead.id);
+          }
+        };
+
         const tagClass = lead.type === "Commercial" ? "tag-commercial" : (lead.type.includes("Airbnb") ? "tag-airbnb" : "tag-residential");
 
         card.innerHTML = `
           <div class="lead-card-header">
             <div>
-              <div class="lead-name">${lead.name}</div>
+              <div class="lead-name" style="display: flex; align-items: center; gap: 6px;">
+                <span>${lead.name}</span>
+                <span class="pen-badge" style="font-size: 9.5px; padding: 1px 5px;" onclick="event.stopPropagation(); app.openEditLeadModal('${lead.id}')" title="Modify Lead">✏️ Edit</span>
+              </div>
               <div class="lead-company">${lead.company}</div>
             </div>
             <span class="tag ${tagClass}">${lead.type.split(' ')[0]}</span>
@@ -326,8 +374,20 @@ class SamediCRM {
           </div>
           <div class="lead-footer">
             <span class="lead-budget">£${lead.budget.toFixed(2)}</span>
-            <div style="display: flex; gap: 4px;">
-              ${stage !== 'contract_signed' ? `<button class="btn btn-secondary btn-sm" onclick="app.advanceLeadStage('${lead.id}')" title="Move to next stage">➔ Move</button>` : `<span class="tag tag-green">✓ Won</span>`}
+            <div class="action-btn-group" onclick="event.stopPropagation()">
+              <button class="btn-icon-action btn-action-edit" onclick="app.openEditLeadModal('${lead.id}')" title="Modify Quote / Lead (✏️ Edit)">
+                ✏️
+              </button>
+              <button class="btn-icon-action btn-action-duplicate" onclick="app.duplicateLead('${lead.id}')" title="Duplicate Quote / Lead (📋 Duplicate)">
+                📋
+              </button>
+              <button class="btn-icon-action" onclick="app.convertLeadToInvoice('${lead.id}')" title="Convert to UK Statutory Invoice (Facture)">
+                📄
+              </button>
+              <button class="btn-icon-action btn-action-delete" onclick="app.deleteLead('${lead.id}')" title="Delete Lead (🗑️ Delete)">
+                🗑️
+              </button>
+              ${stage !== 'contract_signed' ? `<button class="btn btn-secondary btn-sm" onclick="app.advanceLeadStage('${lead.id}')" title="Move to next stage" style="padding: 2px 6px; font-size: 11px;">➔</button>` : `<span class="tag tag-green" style="font-size: 10px;">✓ Won</span>`}
             </div>
           </div>
         `;
@@ -419,7 +479,8 @@ class SamediCRM {
 
         matchingJobs.forEach(job => {
           const pill = document.createElement("div");
-          pill.className = "job-pill";
+          pill.className = "job-pill clickable-card";
+          pill.title = "Click to inspect & modify job details";
           if (job.service.includes("Airbnb")) {
             pill.style.borderLeftColor = "var(--gold-primary)";
           } else if (job.service.includes("Commercial")) {
@@ -427,10 +488,17 @@ class SamediCRM {
           }
 
           pill.innerHTML = `
-            <div class="job-pill-title">${job.title}</div>
-            <div class="job-pill-sub">${job.cleanerName} • £${job.amount}</div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 4px;">
+              <div style="flex: 1; min-width: 0;">
+                <div class="job-pill-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${job.title}</div>
+                <div class="job-pill-sub">${job.cleanerName} • £${job.amount}</div>
+              </div>
+              <div style="display: flex; gap: 2px;" onclick="event.stopPropagation()">
+                <button class="btn-icon-action btn-action-edit" style="width: 22px; height: 22px; font-size: 11px; padding: 0;" onclick="app.openEditJobModal('${job.id}')" title="Modify Job">✏️</button>
+              </div>
+            </div>
           `;
-          pill.addEventListener("click", () => this.openCleanerMobile(job.id));
+          pill.addEventListener("click", () => this.openEditJobModal(job.id));
           slotCell.appendChild(pill);
         });
 
@@ -454,7 +522,13 @@ class SamediCRM {
 
     this.data.cleaners.forEach(cleaner => {
       const card = document.createElement("div");
-      card.className = "cleaner-card";
+      card.className = "cleaner-card clickable-card";
+      card.title = "Click to modify cleaner profile & rates";
+      card.onclick = (e) => {
+        if (!e.target.closest("button")) {
+          this.openEditCleanerModal(cleaner.id);
+        }
+      };
 
       const isApplicant = cleaner.status.includes("Applicant");
       const dbsTagClass = cleaner.dbsStatus.includes("Verified") ? "tag-green" : "tag-amber";
@@ -463,8 +537,13 @@ class SamediCRM {
         <div>
           <div class="cleaner-header">
             <img src="${cleaner.avatar}" class="cleaner-avatar" alt="${cleaner.name}">
-            <div>
-              <div class="cleaner-name">${cleaner.name}</div>
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div class="cleaner-name" style="display: flex; align-items: center; gap: 6px;">
+                  <span>${cleaner.name}</span>
+                  <span class="pen-badge" style="font-size: 9px; padding: 1px 4px;" onclick="event.stopPropagation(); app.openEditCleanerModal('${cleaner.id}')" title="Modify Cleaner Profile">✏️ Edit</span>
+                </div>
+              </div>
               <div class="cleaner-role">${cleaner.role}</div>
               <div class="cleaner-rating">★ ${cleaner.rating > 0 ? cleaner.rating.toFixed(1) : 'New'} (${cleaner.jobsCompleted} cleans)</div>
             </div>
@@ -482,23 +561,26 @@ class SamediCRM {
           </div>
           <div class="cleaner-meta-row">
             <span>Coverage Boroughs</span>
-            <strong>${cleaner.boroughs.join(', ')}</strong>
+            <strong>${(cleaner.boroughs || []).join(', ')}</strong>
           </div>
           <div class="cleaner-meta-row">
             <span>Pay Rate</span>
-            <strong style="color: var(--gold-light);">£${cleaner.hourlyRate.toFixed(2)} / hour</strong>
+            <strong style="color: var(--gold-light);">£${Number(cleaner.hourlyRate).toFixed(2)} / hour</strong>
           </div>
 
           <div class="cleaner-skills">
-            ${cleaner.skills.map(s => `<span class="skill-chip">${s}</span>`).join('')}
+            ${(cleaner.skills || []).map(s => `<span class="skill-chip">${s}</span>`).join('')}
           </div>
         </div>
 
-        <div style="display: flex; gap: 8px; margin-top: 14px;">
+        <div style="display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap;" onclick="event.stopPropagation()">
           ${isApplicant ? 
             `<button class="btn btn-primary btn-sm" style="flex: 1;" onclick="app.approveCleanerApplicant('${cleaner.id}')">Approve & Verify DBS</button>` :
-            `<button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="app.openCleanerDirectMobile('${cleaner.id}')">📱 Cleaner Mobile App</button>
-             <button class="btn btn-secondary btn-sm" onclick="app.showToast('Calling ${cleaner.name}: ${cleaner.phone}')">📞 Call</button>`
+            `<button class="btn-icon-action btn-action-edit" onclick="app.openEditCleanerModal('${cleaner.id}')" title="Modify Cleaner Profile (✏️ Edit)">✏️</button>
+             <button class="btn-icon-action btn-action-duplicate" onclick="app.duplicateCleaner('${cleaner.id}')" title="Duplicate Cleaner Profile (📋 Duplicate)">📋</button>
+             <button class="btn btn-secondary btn-sm" style="flex: 1; font-size: 11.5px;" onclick="app.openCleanerDirectMobile('${cleaner.id}')">📱 Cleaner Mobile</button>
+             <button class="btn btn-secondary btn-sm" onclick="app.showToast('Calling ${cleaner.name}: ${cleaner.phone}')">📞</button>
+             <button class="btn-icon-action btn-action-delete" onclick="app.deleteCleaner('${cleaner.id}')" title="Delete Cleaner (🗑️ Delete)">🗑️</button>`
           }
         </div>
       `;
@@ -528,10 +610,23 @@ class SamediCRM {
 
     this.data.invoices.forEach(inv => {
       const tr = document.createElement("tr");
+      tr.className = "clickable-row";
+      tr.title = "Click to view full UK Statutory Invoice & Print";
+      tr.onclick = (e) => {
+        if (!e.target.closest("button")) {
+          this.viewInvoice(inv.id);
+        }
+      };
+
       const statusClass = inv.status === "Paid" ? "tag-green" : (inv.status === "Sent" ? "tag-amber" : "tag-residential");
 
       tr.innerHTML = `
-        <td><strong style="font-family: var(--font-mono); color: var(--gold-light);">${inv.id}</strong></td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <strong style="font-family: var(--font-mono); color: var(--gold-light);">${inv.id}</strong>
+            <span class="pen-badge" style="font-size: 9px; padding: 1px 4px;" onclick="event.stopPropagation(); app.openEditInvoiceModal('${inv.id}')" title="Modify Invoice">✏️</span>
+          </div>
+        </td>
         <td>
           <div style="font-weight: 700; color: #FFFFFF;">${inv.clientName}</div>
           <div style="font-size: 11px; color: var(--text-secondary);">${inv.company}</div>
@@ -541,8 +636,8 @@ class SamediCRM {
           <div style="font-size: 10.5px; color: var(--text-muted);">Due: ${inv.dueDate}</div>
         </td>
         <td>
-          <div style="font-weight: 800; color: #FFFFFF;">£${inv.total.toFixed(2)}</div>
-          <div style="font-size: 10.5px; color: var(--text-muted);">(Net: £${inv.subtotal.toFixed(2)} + VAT: £${inv.vat.toFixed(2)})</div>
+          <div style="font-weight: 800; color: #FFFFFF;">£${Number(inv.total).toFixed(2)}</div>
+          <div style="font-size: 10.5px; color: var(--text-muted);">(Net: £${Number(inv.subtotal).toFixed(2)} + VAT: £${Number(inv.vat).toFixed(2)})</div>
         </td>
         <td>
           <span class="code" style="font-size: 10px;">${inv.stripeSessionId}</span>
@@ -551,7 +646,23 @@ class SamediCRM {
           <span class="tag ${statusClass}">${inv.status}</span>
         </td>
         <td>
-          <button class="btn btn-secondary btn-sm" onclick="app.viewInvoice('${inv.id}')">View / Print</button>
+          <div class="action-btn-group" onclick="event.stopPropagation()">
+            <button class="btn-icon-action btn-action-edit" onclick="app.openEditInvoiceModal('${inv.id}')" title="Modify Invoice (✏️ Edit)">
+              ✏️
+            </button>
+            <button class="btn-icon-action btn-action-duplicate" onclick="app.duplicateInvoice('${inv.id}')" title="Duplicate Invoice (📋 Duplicate)">
+              📋
+            </button>
+            <button class="btn-icon-action" onclick="app.viewInvoice('${inv.id}')" title="View & Print Invoice (👁️ View)">
+              👁️
+            </button>
+            <button class="btn-icon-action" onclick="app.toggleInvoiceStatus('${inv.id}')" title="Toggle Paid / Sent Status" style="font-weight: 700; color: var(--primary-green);">
+              ${inv.status === 'Paid' ? '✓' : '£'}
+            </button>
+            <button class="btn-icon-action btn-action-delete" onclick="app.deleteInvoice('${inv.id}')" title="Delete Invoice (🗑️ Delete)">
+              🗑️
+            </button>
+          </div>
         </td>
       `;
       tbody.appendChild(tr);
@@ -561,24 +672,28 @@ class SamediCRM {
   viewInvoice(invId) {
     const inv = this.data.invoices.find(i => i.id === invId);
     if (!inv) return;
+    this.currentViewedInvoiceId = invId;
 
     const modalBody = document.getElementById("invoice-printable-body");
     modalBody.innerHTML = `
       <div style="background: #FFFFFF; color: #0F172A; padding: 24px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif;">
-        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #0F172A; padding-bottom: 14px; margin-bottom: 18px;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #0F172A; padding-bottom: 14px; margin-bottom: 18px; flex-wrap: wrap; gap: 8px;">
           <div>
             <h2 style="font-size: 20px; font-weight: 800; color: #1B2E1B; margin: 0;">SAMEDI GROUP</h2>
             <div style="font-size: 11px; color: #64748B;">Premium Cleaning & Facilities London</div>
             <div style="font-size: 10px; color: #64748B;">CRN: ${this.data.company.crn} • VAT REG: ${this.data.company.vat}</div>
           </div>
           <div style="text-align: right;">
-            <h3 style="font-size: 16px; font-weight: 800; color: #C9A84C; margin: 0;">TAX INVOICE</h3>
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-bottom: 4px;">
+              <h3 style="font-size: 16px; font-weight: 800; color: #C9A84C; margin: 0;">TAX INVOICE</h3>
+              <button class="btn-icon-action btn-action-edit" style="width: 24px; height: 24px; font-size: 11px;" onclick="app.openEditInvoiceModal('${inv.id}')" title="Modify Invoice">✏️</button>
+            </div>
             <div style="font-size: 12px; font-weight: 700; color: #0F172A;">${inv.id}</div>
             <div style="font-size: 11px; color: #64748B;">Date: ${inv.date}</div>
           </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px; flex-wrap: wrap; gap: 12px;">
           <div>
             <div style="font-weight: 700; color: #64748B; font-size: 10px; text-transform: uppercase;">Billed To:</div>
             <div style="font-weight: 800; color: #0F172A; font-size: 13px;">${inv.clientName}</div>
@@ -602,12 +717,12 @@ class SamediCRM {
             </tr>
           </thead>
           <tbody>
-            ${inv.items.map(item => `
+            ${(inv.items || [{ desc: 'Commercial Cleaning Services', qty: 1, rate: inv.subtotal, total: inv.subtotal }]).map(item => `
               <tr style="border-bottom: 1px solid #E2E8F0;">
                 <td style="padding: 8px 10px; font-weight: 600; color: #1E293B;">${item.desc}</td>
                 <td style="padding: 8px 10px; text-align: center; color: #64748B;">${item.qty}</td>
-                <td style="padding: 8px 10px; text-align: right; color: #64748B;">£${item.rate.toFixed(2)}</td>
-                <td style="padding: 8px 10px; text-align: right; font-weight: 700; color: #1E293B;">£${item.total.toFixed(2)}</td>
+                <td style="padding: 8px 10px; text-align: right; color: #64748B;">£${Number(item.rate).toFixed(2)}</td>
+                <td style="padding: 8px 10px; text-align: right; font-weight: 700; color: #1E293B;">£${Number(item.total).toFixed(2)}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -617,28 +732,33 @@ class SamediCRM {
           <div style="width: 220px; font-size: 12px;">
             <div style="display: flex; justify-content: space-between; padding: 4px 0;">
               <span>Subtotal:</span>
-              <span>£${inv.subtotal.toFixed(2)}</span>
+              <span>£${Number(inv.subtotal).toFixed(2)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding: 4px 0;">
               <span>UK VAT (20%):</span>
-              <span>£${inv.vat.toFixed(2)}</span>
+              <span>£${Number(inv.vat).toFixed(2)}</span>
             </div>
             <div style="display: flex; justify-content: space-between; padding: 6px 0; border-top: 2px solid #0F172A; font-weight: 800; font-size: 14px; color: #1B2E1B;">
               <span>Total Payable:</span>
-              <span>£${inv.total.toFixed(2)}</span>
+              <span>£${Number(inv.total).toFixed(2)}</span>
             </div>
           </div>
         </div>
 
-        <div style="border-top: 1px solid #E2E8F0; padding-top: 12px; font-size: 10px; color: #64748B; display: flex; justify-content: space-between;">
+        <div style="border-top: 1px solid #E2E8F0; padding-top: 12px; font-size: 10px; color: #64748B; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
           <div>Bank: Barclays Bank UK • Sort Code: 20-00-00 • Acc: 83921049</div>
           <div>Stripe Live Settlement ID: ${inv.stripeSessionId}</div>
         </div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
-        <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save as PDF</button>
-        <button class="btn btn-primary" onclick="app.closeModal('modal-invoice-view')">Close</button>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; flex-wrap: wrap;">
+        <button class="btn btn-secondary" onclick="app.openEditInvoiceModal('${inv.id}')">
+          ✏️ Modify This Invoice
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary" onclick="window.print()">🖨️ Print / Save as PDF</button>
+          <button class="btn btn-primary" onclick="app.closeModal('modal-invoice-view')">Close</button>
+        </div>
       </div>
     `;
 
@@ -1473,6 +1593,14 @@ class SamediCRM {
 
     items.forEach(item => {
       const tr = document.createElement("tr");
+      tr.className = "clickable-row";
+      tr.title = "Click to inspect & modify SKU details and safety thresholds";
+      tr.onclick = (e) => {
+        if (!e.target.closest("button")) {
+          this.openEditInventoryModal(item.sku);
+        }
+      };
+
       const tagClass = categoryTagMap[item.category] || "tag-green";
       const totalVal = (item.quantity * item.unitCost).toFixed(2);
 
@@ -1491,7 +1619,12 @@ class SamediCRM {
       }
 
       tr.innerHTML = `
-        <td><span class="sku-badge">${item.sku}</span></td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span class="sku-badge">${item.sku}</span>
+            <span class="pen-badge" style="font-size: 8.5px; padding: 1px 4px;" onclick="event.stopPropagation(); app.openEditInventoryModal('${item.sku}')" title="Modify SKU">✏️</span>
+          </div>
+        </td>
         <td>
           <strong style="color: var(--text-main); font-size: 12.5px;">${item.name}</strong><br>
           <small style="color: var(--text-secondary);">${item.unit} • Supplier: ${item.supplier}</small>
@@ -1511,16 +1644,25 @@ class SamediCRM {
             </div>
           </div>
         </td>
-        <td style="font-weight: 600;">£${item.unitCost.toFixed(2)}</td>
+        <td style="font-weight: 600;">£${Number(item.unitCost).toFixed(2)}</td>
         <td style="font-weight: 700; color: var(--primary-green);">£${totalVal}</td>
         <td>${statusHtml}</td>
         <td>
-          <div style="display: flex; gap: 4px; align-items: center;">
-            <button class="btn btn-secondary btn-sm" onclick="app.openStockMovementModal('${item.sku}')" title="Record Movement">
-              Dispatch / In
+          <div class="action-btn-group" onclick="event.stopPropagation()">
+            <button class="btn-icon-action btn-action-edit" onclick="app.openEditInventoryModal('${item.sku}')" title="Modify SKU Details & Stock Limits (✏️ Edit)">
+              ✏️
             </button>
-            <button class="btn btn-secondary btn-sm" onclick="app.quickRestockItem('${item.sku}', 10)" title="Quick restock +10 units" style="padding: 4px 8px; font-weight: 700;">
+            <button class="btn-icon-action btn-action-duplicate" onclick="app.duplicateInventory('${item.sku}')" title="Duplicate Inventory Item (📋 Duplicate)">
+              📋
+            </button>
+            <button class="btn-icon-action" onclick="app.openStockMovementModal('${item.sku}')" title="Record In/Out Movement">
+              🔄
+            </button>
+            <button class="btn-icon-action" onclick="app.quickRestockItem('${item.sku}', 10)" title="Quick restock +10 units" style="padding: 2px 6px; font-weight: 700; color: var(--primary-green); font-size: 11px;">
               +10
+            </button>
+            <button class="btn-icon-action btn-action-delete" onclick="app.deleteInventory('${item.sku}')" title="Delete Inventory Item (🗑️ Delete)">
+              🗑️
             </button>
           </div>
         </td>
@@ -1543,13 +1685,14 @@ class SamediCRM {
 
     if (list.length === 0) {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="9" style="text-align: center; padding: 24px; color: var(--text-muted);">No stock movements recorded under this filter.</td>`;
+      tr.innerHTML = `<td colspan="10" style="text-align: center; padding: 24px; color: var(--text-muted);">No stock movements recorded under this filter.</td>`;
       tbody.appendChild(tr);
       return;
     }
 
     list.forEach(m => {
       const tr = document.createElement("tr");
+      tr.className = "clickable-row";
       let typeBadge = "";
       let qtyDisplay = "";
 
@@ -1577,6 +1720,13 @@ class SamediCRM {
         <td style="font-size: 11.5px; color: var(--text-main);">${m.recipient || '—'}</td>
         <td style="font-size: 11px; color: var(--text-secondary);">${m.notes || '—'}</td>
         <td style="font-size: 11px; color: var(--text-muted);">${m.authorizedBy || 'Operations Lead'}</td>
+        <td>
+          <div class="action-btn-group" onclick="event.stopPropagation()">
+            <button class="btn-icon-action btn-action-delete" onclick="app.deleteStockMovement('${mvt.id}')" title="Undo / Delete Stock Movement (🗑️ Delete & Reverse Stock)">
+              🗑️
+            </button>
+          </div>
+        </td>
       `;
       tbody.appendChild(tr);
     });
@@ -1822,6 +1972,536 @@ class SamediCRM {
     this.saveState();
     this.renderInventory();
     this.showToast(`✓ Restocked +${qty} ${item.unit} for ${item.name} (New depot balance: ${item.quantity})`);
+  }
+
+  // ==========================================================================
+  // COMPREHENSIVE CRUD CONTROLLER (MODIFY, DUPLICATE, DELETE, CONVERT)
+  // ==========================================================================
+
+  // --- JOB CRUD ---
+  openEditJobModal(jobId) {
+    const job = (this.data.jobs || []).find(j => j.id === jobId);
+    if (!job) return;
+
+    document.getElementById("edit-job-id").value = job.id;
+    const label = document.getElementById("edit-job-id-label");
+    if (label) label.innerText = `#${job.id}`;
+
+    document.getElementById("edit-job-title").value = job.title || "";
+    document.getElementById("edit-job-client").value = job.client || "";
+    document.getElementById("edit-job-service").value = job.service || "";
+    document.getElementById("edit-job-borough").value = job.borough || "";
+    document.getElementById("edit-job-address").value = job.address || "";
+    document.getElementById("edit-job-date").value = job.date || "";
+    document.getElementById("edit-job-time").value = job.time || "";
+    document.getElementById("edit-job-amount").value = job.amount || 0;
+    document.getElementById("edit-job-status").value = job.status || "Scheduled";
+    document.getElementById("edit-job-access").value = job.checkInCode || "";
+
+    // Populate cleaner select in edit modal
+    const cleanerSelect = document.getElementById("edit-job-cleaner-select");
+    if (cleanerSelect) {
+      cleanerSelect.innerHTML = "";
+      (this.data.cleaners || []).forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.innerText = `${c.name} (${c.role.split(' ')[0]})`;
+        if (c.id === job.cleanerId || c.name === job.cleanerName) {
+          opt.selected = true;
+        }
+        cleanerSelect.appendChild(opt);
+      });
+    }
+
+    this.openModal("modal-edit-job");
+  }
+
+  handleEditJobSubmit(e) {
+    e.preventDefault();
+    const jobId = document.getElementById("edit-job-id").value;
+    const job = (this.data.jobs || []).find(j => j.id === jobId);
+    if (!job) return;
+
+    job.title = document.getElementById("edit-job-title").value.trim();
+    job.client = document.getElementById("edit-job-client").value.trim();
+    job.service = document.getElementById("edit-job-service").value.trim();
+    job.borough = document.getElementById("edit-job-borough").value.trim();
+    job.address = document.getElementById("edit-job-address").value.trim();
+    job.date = document.getElementById("edit-job-date").value;
+    job.time = document.getElementById("edit-job-time").value.trim();
+    job.amount = parseFloat(document.getElementById("edit-job-amount").value) || 0;
+    job.status = document.getElementById("edit-job-status").value;
+    job.checkInCode = document.getElementById("edit-job-access").value.trim();
+
+    const cleanerSel = document.getElementById("edit-job-cleaner-select");
+    if (cleanerSel && cleanerSel.value) {
+      job.cleanerId = cleanerSel.value;
+      const foundCleaner = (this.data.cleaners || []).find(c => c.id === cleanerSel.value);
+      if (foundCleaner) job.cleanerName = foundCleaner.name;
+    }
+
+    this.saveState();
+    this.closeModal("modal-edit-job");
+    this.renderCurrentView();
+    this.showToast(`✓ Job #${job.id} modified successfully!`);
+  }
+
+  duplicateJob(jobId) {
+    const job = (this.data.jobs || []).find(j => j.id === jobId);
+    if (!job) return;
+
+    const cloned = JSON.parse(JSON.stringify(job));
+    cloned.id = `job-${Date.now().toString().slice(-4)}`;
+    cloned.title = `${job.title} (Copy)`;
+    cloned.status = "Scheduled";
+    cloned.paid = false;
+
+    this.data.jobs.unshift(cloned);
+    this.saveState();
+    this.renderCurrentView();
+    this.showToast(`📋 Job duplicated as #${cloned.id}!`);
+    this.openEditJobModal(cloned.id);
+  }
+
+  deleteJob(jobId) {
+    const idx = (this.data.jobs || []).findIndex(j => j.id === jobId);
+    if (idx === -1) return;
+
+    if (!confirm(`Are you sure you want to permanently delete job #${jobId}?`)) {
+      return;
+    }
+
+    this.data.jobs.splice(idx, 1);
+    this.saveState();
+    this.renderCurrentView();
+    this.showToast(`🗑️ Job #${jobId} deleted.`);
+  }
+
+  editJobFromMobileView() {
+    if (this.selectedCleanerMobile) {
+      const jId = this.selectedCleanerMobile;
+      this.closeModal("modal-cleaner-mobile");
+      this.openEditJobModal(jId);
+    }
+  }
+
+  // --- LEAD CRUD ---
+  openEditLeadModal(leadId) {
+    const lead = (this.data.leads || []).find(l => l.id === leadId);
+    if (!lead) return;
+
+    document.getElementById("edit-lead-id").value = lead.id;
+    const label = document.getElementById("edit-lead-id-label");
+    if (label) label.innerText = lead.name;
+
+    document.getElementById("edit-lead-name").value = lead.name || "";
+    document.getElementById("edit-lead-company").value = lead.company || "";
+    document.getElementById("edit-lead-phone").value = lead.phone || "";
+    document.getElementById("edit-lead-email").value = lead.email || "";
+    document.getElementById("edit-lead-service").value = lead.service || "";
+    document.getElementById("edit-lead-borough").value = lead.borough || "";
+    document.getElementById("edit-lead-budget").value = lead.budget || 0;
+    document.getElementById("edit-lead-stage").value = lead.stage || "new";
+    document.getElementById("edit-lead-notes").value = lead.notes || "";
+
+    this.openModal("modal-edit-lead");
+  }
+
+  handleEditLeadSubmit(e) {
+    e.preventDefault();
+    const leadId = document.getElementById("edit-lead-id").value;
+    const lead = (this.data.leads || []).find(l => l.id === leadId);
+    if (!lead) return;
+
+    lead.name = document.getElementById("edit-lead-name").value.trim();
+    lead.company = document.getElementById("edit-lead-company").value.trim();
+    lead.phone = document.getElementById("edit-lead-phone").value.trim();
+    lead.email = document.getElementById("edit-lead-email").value.trim();
+    lead.service = document.getElementById("edit-lead-service").value.trim();
+    lead.borough = document.getElementById("edit-lead-borough").value.trim();
+    lead.budget = parseFloat(document.getElementById("edit-lead-budget").value) || 0;
+    lead.stage = document.getElementById("edit-lead-stage").value;
+    lead.notes = document.getElementById("edit-lead-notes").value.trim();
+
+    this.saveState();
+    this.closeModal("modal-edit-lead");
+    this.renderCurrentView();
+    this.showToast(`✓ Lead "${lead.name}" updated!`);
+  }
+
+  duplicateLead(leadId) {
+    const lead = (this.data.leads || []).find(l => l.id === leadId);
+    if (!lead) return;
+
+    const cloned = JSON.parse(JSON.stringify(lead));
+    cloned.id = `lead-${Date.now().toString().slice(-4)}`;
+    cloned.name = `${lead.name} (Copy)`;
+    cloned.createdAt = new Date().toISOString();
+
+    this.data.leads.unshift(cloned);
+    this.saveState();
+    this.renderCurrentView();
+    this.showToast(`📋 Lead duplicated: ${cloned.name}`);
+    this.openEditLeadModal(cloned.id);
+  }
+
+  deleteLead(leadId) {
+    const idx = (this.data.leads || []).findIndex(l => l.id === leadId);
+    if (idx === -1) return;
+
+    if (!confirm(`Are you sure you want to delete lead #${leadId}?`)) {
+      return;
+    }
+
+    this.data.leads.splice(idx, 1);
+    this.saveState();
+    this.renderCurrentView();
+    this.showToast(`🗑️ Lead deleted.`);
+  }
+
+  convertLeadToInvoice(leadId) {
+    const lead = (this.data.leads || []).find(l => l.id === leadId);
+    if (!lead) return;
+
+    const net = parseFloat(lead.budget) || 280;
+    const vat = net * 0.20;
+    const total = net + vat;
+    const invId = `INV-2026-0${(this.data.invoices ? this.data.invoices.length : 0) + 48}`;
+
+    const newInvoice = {
+      id: invId,
+      jobId: lead.id,
+      clientName: lead.name,
+      company: lead.company || lead.name,
+      email: lead.email || "accounts@client.co.uk",
+      date: new Date().toISOString().split("T")[0],
+      dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0],
+      items: [
+        { desc: `${lead.service} — ${lead.borough}`, qty: 1, rate: net, total: net }
+      ],
+      subtotal: net,
+      vat: vat,
+      total: total,
+      status: "Sent",
+      stripeSessionId: "cs_live_" + Math.random().toString(36).substring(2, 14)
+    };
+
+    if (!this.data.invoices) this.data.invoices = [];
+    this.data.invoices.unshift(newInvoice);
+    this.saveState();
+
+    this.showToast(`✓ Generated UK Invoice ${invId} for ${lead.name} (£${total.toFixed(2)})`);
+    this.switchView("invoices");
+    this.viewInvoice(invId);
+  }
+
+  // --- INVOICE CRUD ---
+  openEditInvoiceModal(invId) {
+    const inv = (this.data.invoices || []).find(i => i.id === invId);
+    if (!inv) return;
+
+    document.getElementById("edit-inv-id").value = inv.id;
+    const label = document.getElementById("edit-inv-id-label");
+    if (label) label.innerText = inv.id;
+
+    document.getElementById("edit-inv-client").value = inv.clientName || "";
+    document.getElementById("edit-inv-company").value = inv.company || "";
+    document.getElementById("edit-inv-email").value = inv.email || "";
+    document.getElementById("edit-inv-status").value = inv.status || "Sent";
+    document.getElementById("edit-inv-desc").value = (inv.items && inv.items[0]) ? inv.items[0].desc : "Commercial Cleaning Services";
+    document.getElementById("edit-inv-net").value = inv.subtotal || 0;
+    document.getElementById("edit-inv-duedate").value = inv.dueDate || "";
+
+    this.recalcEditInvoiceTotals();
+    this.openModal("modal-edit-invoice");
+  }
+
+  recalcEditInvoiceTotals() {
+    const netInput = document.getElementById("edit-inv-net");
+    const pNet = document.getElementById("edit-inv-preview-net");
+    const pVat = document.getElementById("edit-inv-preview-vat");
+    const pTot = document.getElementById("edit-inv-preview-total");
+
+    if (!netInput || !pNet) return;
+    const net = parseFloat(netInput.value) || 0;
+    const vat = net * 0.20;
+    const tot = net + vat;
+
+    pNet.innerText = `£${net.toFixed(2)}`;
+    pVat.innerText = `£${vat.toFixed(2)}`;
+    pTot.innerText = `£${tot.toFixed(2)}`;
+  }
+
+  handleEditInvoiceSubmit(e) {
+    e.preventDefault();
+    const invId = document.getElementById("edit-inv-id").value;
+    const inv = (this.data.invoices || []).find(i => i.id === invId);
+    if (!inv) return;
+
+    const net = parseFloat(document.getElementById("edit-inv-net").value) || 0;
+    const vat = net * 0.20;
+    const tot = net + vat;
+    const desc = document.getElementById("edit-inv-desc").value.trim();
+
+    inv.clientName = document.getElementById("edit-inv-client").value.trim();
+    inv.company = document.getElementById("edit-inv-company").value.trim();
+    inv.email = document.getElementById("edit-inv-email").value.trim();
+    inv.status = document.getElementById("edit-inv-status").value;
+    inv.dueDate = document.getElementById("edit-inv-duedate").value;
+    inv.subtotal = net;
+    inv.vat = vat;
+    inv.total = tot;
+    inv.items = [
+      { desc: desc, qty: 1, rate: net, total: net }
+    ];
+
+    this.saveState();
+    this.closeModal("modal-edit-invoice");
+    this.renderCurrentView();
+    this.showToast(`✓ Invoice ${inv.id} modified successfully!`);
+    this.viewInvoice(inv.id);
+  }
+
+  duplicateInvoice(invId) {
+    const inv = (this.data.invoices || []).find(i => i.id === invId);
+    if (!inv) return;
+
+    const cloned = JSON.parse(JSON.stringify(inv));
+    cloned.id = `INV-2026-0${(this.data.invoices ? this.data.invoices.length : 0) + 51}`;
+    cloned.date = new Date().toISOString().split("T")[0];
+    cloned.dueDate = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
+    cloned.status = "Draft";
+    cloned.stripeSessionId = "cs_live_" + Math.random().toString(36).substring(2, 14);
+
+    this.data.invoices.unshift(cloned);
+    this.saveState();
+    this.renderCurrentView();
+    this.showToast(`📋 Invoice duplicated: ${cloned.id}`);
+    this.openEditInvoiceModal(cloned.id);
+  }
+
+  deleteInvoice(invId) {
+    const idx = (this.data.invoices || []).findIndex(i => i.id === invId);
+    if (idx === -1) return;
+
+    if (!confirm(`Are you sure you want to permanently delete Invoice ${invId}?`)) {
+      return;
+    }
+
+    this.data.invoices.splice(idx, 1);
+    this.saveState();
+    this.renderCurrentView();
+    this.showToast(`🗑️ Invoice ${invId} deleted.`);
+  }
+
+  toggleInvoiceStatus(invId) {
+    const inv = (this.data.invoices || []).find(i => i.id === invId);
+    if (!inv) return;
+
+    inv.status = inv.status === "Paid" ? "Sent" : "Paid";
+    if (inv.status === "Paid" && !inv.stripeSessionId.includes("cs_live")) {
+      inv.stripeSessionId = "cs_live_" + Math.random().toString(36).substring(2, 14);
+    }
+
+    this.saveState();
+    this.renderCurrentView();
+    this.showToast(`✓ Invoice ${inv.id} marked as ${inv.status.toUpperCase()}`);
+  }
+
+  editInvoiceFromView() {
+    if (this.currentViewedInvoiceId) {
+      const invId = this.currentViewedInvoiceId;
+      this.closeModal("modal-invoice-view");
+      this.openEditInvoiceModal(invId);
+    }
+  }
+
+  // --- CLEANER CRUD ---
+  openEditCleanerModal(cleanerId) {
+    const cleaner = (this.data.cleaners || []).find(c => c.id === cleanerId);
+    if (!cleaner) return;
+
+    document.getElementById("edit-cleaner-id").value = cleaner.id;
+    const label = document.getElementById("edit-cleaner-name-label");
+    if (label) label.innerText = cleaner.name;
+
+    document.getElementById("edit-cleaner-name").value = cleaner.name || "";
+    document.getElementById("edit-cleaner-role").value = cleaner.role || "";
+    document.getElementById("edit-cleaner-phone").value = cleaner.phone || "";
+    document.getElementById("edit-cleaner-email").value = cleaner.email || "";
+    document.getElementById("edit-cleaner-boroughs").value = (cleaner.boroughs || []).join(", ");
+    document.getElementById("edit-cleaner-rate").value = cleaner.hourlyRate || 18.50;
+    document.getElementById("edit-cleaner-dbs").value = cleaner.dbsStatus || "Verified (Enhanced DBS)";
+    document.getElementById("edit-cleaner-status").value = cleaner.status || "Active";
+    document.getElementById("edit-cleaner-skills").value = (cleaner.skills || []).join(", ");
+
+    this.openModal("modal-edit-cleaner");
+  }
+
+  handleEditCleanerSubmit(e) {
+    e.preventDefault();
+    const cleanerId = document.getElementById("edit-cleaner-id").value;
+    const cleaner = (this.data.cleaners || []).find(c => c.id === cleanerId);
+    if (!cleaner) return;
+
+    cleaner.name = document.getElementById("edit-cleaner-name").value.trim();
+    cleaner.role = document.getElementById("edit-cleaner-role").value.trim();
+    cleaner.phone = document.getElementById("edit-cleaner-phone").value.trim();
+    cleaner.email = document.getElementById("edit-cleaner-email").value.trim();
+    cleaner.boroughs = document.getElementById("edit-cleaner-boroughs").value.split(",").map(b => b.trim()).filter(Boolean);
+    cleaner.hourlyRate = parseFloat(document.getElementById("edit-cleaner-rate").value) || 18.50;
+    cleaner.dbsStatus = document.getElementById("edit-cleaner-dbs").value;
+    cleaner.status = document.getElementById("edit-cleaner-status").value;
+    cleaner.skills = document.getElementById("edit-cleaner-skills").value.split(",").map(s => s.trim()).filter(Boolean);
+
+    this.saveState();
+    this.closeModal("modal-edit-cleaner");
+    this.renderCurrentView();
+    this.populateCleanerSelects();
+    this.showToast(`✓ Staff profile for ${cleaner.name} updated!`);
+  }
+
+  duplicateCleaner(cleanerId) {
+    const cleaner = (this.data.cleaners || []).find(c => c.id === cleanerId);
+    if (!cleaner) return;
+
+    const cloned = JSON.parse(JSON.stringify(cleaner));
+    cloned.id = `cleaner-${Date.now().toString().slice(-4)}`;
+    cloned.name = `${cleaner.name} (Copy)`;
+    cloned.jobsCompleted = 0;
+
+    this.data.cleaners.push(cloned);
+    this.saveState();
+    this.renderCurrentView();
+    this.populateCleanerSelects();
+    this.showToast(`📋 Cleaner profile duplicated: ${cloned.name}`);
+    this.openEditCleanerModal(cloned.id);
+  }
+
+  deleteCleaner(cleanerId) {
+    const idx = (this.data.cleaners || []).findIndex(c => c.id === cleanerId);
+    if (idx === -1) return;
+
+    if (!confirm(`Are you sure you want to remove cleaner #${cleanerId} from the roster?`)) {
+      return;
+    }
+
+    this.data.cleaners.splice(idx, 1);
+    this.saveState();
+    this.renderCurrentView();
+    this.populateCleanerSelects();
+    this.showToast(`🗑️ Cleaner removed from field roster.`);
+  }
+
+  // --- INVENTORY CRUD ---
+  openEditInventoryModal(sku) {
+    const item = (this.data.inventory || []).find(i => (i.sku === sku || i.id === sku));
+    if (!item) return;
+
+    document.getElementById("edit-inv-orig-sku").value = item.sku;
+    const label = document.getElementById("edit-inv-sku-label");
+    if (label) label.innerText = item.sku;
+
+    document.getElementById("edit-inv-name").value = item.name || "";
+    document.getElementById("edit-inv-category").value = item.category || "Chemicals";
+    document.getElementById("edit-inv-unit").value = item.unit || "Units";
+    document.getElementById("edit-inv-quantity").value = (item.quantity !== undefined) ? item.quantity : 0;
+    document.getElementById("edit-inv-min").value = (item.minLevel !== undefined) ? item.minLevel : 5;
+    document.getElementById("edit-inv-cost").value = item.unitCost || 0;
+    document.getElementById("edit-inv-location").value = item.location || "Central Depot";
+    document.getElementById("edit-inv-supplier").value = item.supplier || "";
+
+    this.openModal("modal-edit-inventory");
+  }
+
+  handleEditInventorySubmit(e) {
+    e.preventDefault();
+    const origSku = document.getElementById("edit-inv-orig-sku").value;
+    const item = (this.data.inventory || []).find(i => (i.sku === origSku || i.id === origSku));
+    if (!item) return;
+
+    const qty = parseInt(document.getElementById("edit-inv-quantity").value, 10) || 0;
+    const min = parseInt(document.getElementById("edit-inv-min").value, 10) || 5;
+
+    item.name = document.getElementById("edit-inv-name").value.trim();
+    item.category = document.getElementById("edit-inv-category").value;
+    item.unit = document.getElementById("edit-inv-unit").value.trim();
+    item.quantity = qty;
+    item.currentStock = qty;
+    item.minLevel = min;
+    item.minThreshold = min;
+    item.unitCost = parseFloat(document.getElementById("edit-inv-cost").value) || 0;
+    item.location = document.getElementById("edit-inv-location").value.trim();
+    item.supplier = document.getElementById("edit-inv-supplier").value.trim();
+    item.status = qty === 0 ? "Out of Stock" : (qty <= min ? "Low Stock" : "In Stock");
+
+    this.saveState();
+    this.closeModal("modal-edit-inventory");
+    this.renderInventory();
+    this.showToast(`✓ Inventory item ${item.sku} (${item.name}) updated!`);
+  }
+
+  duplicateInventory(sku) {
+    const item = (this.data.inventory || []).find(i => (i.sku === sku || i.id === sku));
+    if (!item) return;
+
+    const cloned = JSON.parse(JSON.stringify(item));
+    const prefix = item.sku.split('-')[1] || "CON";
+    const newSku = `SKU-${prefix}-${String(400 + (this.data.inventory ? this.data.inventory.length : 0) + 1).slice(-2)}`;
+    cloned.id = newSku;
+    cloned.sku = newSku;
+    cloned.name = `${item.name} (Copy)`;
+    cloned.quantity = 0;
+    cloned.currentStock = 0;
+    cloned.status = "Out of Stock";
+
+    this.data.inventory.push(cloned);
+    this.saveState();
+    this.renderInventory();
+    this.showToast(`📋 SKU duplicated: ${newSku}`);
+    this.openEditInventoryModal(newSku);
+  }
+
+  deleteInventory(sku) {
+    const idx = (this.data.inventory || []).findIndex(i => (i.sku === sku || i.id === sku));
+    if (idx === -1) return;
+
+    if (!confirm(`Are you sure you want to permanently delete SKU ${sku} from inventory?`)) {
+      return;
+    }
+
+    this.data.inventory.splice(idx, 1);
+    this.saveState();
+    this.renderInventory();
+    this.showToast(`🗑️ SKU ${sku} removed from inventory.`);
+  }
+
+  deleteStockMovement(mvtId) {
+    const idx = (this.data.stockMovements || []).findIndex(m => m.id === mvtId);
+    if (idx === -1) return;
+
+    const mvt = this.data.stockMovements[idx];
+    if (!confirm(`Are you sure you want to delete and undo stock movement ${mvtId}? Stock quantities will be automatically restored.`)) {
+      return;
+    }
+
+    // Reverse stock balance safely
+    const item = (this.data.inventory || []).find(i => (i.sku === mvt.sku || i.id === mvt.sku));
+    if (item) {
+      const curr = (item.quantity !== undefined) ? item.quantity : (item.currentStock || 0);
+      if (mvt.type === "outbound") {
+        item.quantity = curr + mvt.quantity;
+        item.currentStock = item.quantity;
+      } else if (mvt.type === "inbound") {
+        item.quantity = Math.max(0, curr - mvt.quantity);
+        item.currentStock = item.quantity;
+      }
+    }
+
+    this.data.stockMovements.splice(idx, 1);
+    this.saveState();
+    this.renderInventory();
+    this.showToast(`🗑️ Stock movement ${mvtId} deleted and reversed.`);
   }
 }
 
