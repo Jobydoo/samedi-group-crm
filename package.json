@@ -1,0 +1,12 @@
+{
+  "name": "samedi-group-crm",
+  "version": "1.0.0",
+  "description": "Operations & Field Service CRM for Samedi Group London",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["crm", "cleaning", "dispatch", "operations", "london"],
+  "author": "Antigravity AI",
+  "license": "MIT"
+}

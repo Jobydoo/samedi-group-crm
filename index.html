@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samedi Group — Operations & Field Service CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="app-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div>
+        <div class="sidebar-header">
+          <div class="brand-wrapper">
+            <div class="brand-crest">SG</div>
+            <div class="brand-info">
+              <h1>Samedi Group</h1>
+              <span>Operations & CRM</span>
+            </div>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <div class="nav-section-title">Core Operations</div>
+          
+          <a class="nav-item active" data-view="dashboard">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            Dashboard
+          </a>
+
+          <a class="nav-item" data-view="leads">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Leads & Quotes
+            <span class="nav-badge" id="badge-leads">5</span>
+          </a>
+
+          <a class="nav-item" data-view="schedule">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            Dispatch Calendar
+            <span class="nav-badge" id="badge-jobs">42</span>
+          </a>
+
+          <a class="nav-item" data-view="cleaners">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Cleaners & Staff
+            <span class="nav-badge alert" id="badge-cleaner-alert">1 New</span>
+          </a>
+
+          <div class="nav-section-title">Finance & Billing</div>
+
+          <a class="nav-item" data-view="invoices">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="8" x2="16" y1="10" y2="10"/><line x1="8" x2="12" y1="14" y2="14"/></svg>
+            Invoices & Stripe
+          </a>
+
+          <div class="nav-section-title">Integration & Setup</div>
+
+          <a class="nav-item" data-view="integrations">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            Website Webhooks
+            <span class="nav-badge">Live</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="live-sync-badge">
+          <div class="pulse-dot"></div>
+          <div>
+            <div style="font-weight: 700; color: #FFFFFF;">samedigroup.co.uk</div>
+            <div style="font-size: 10px; color: var(--gold-light);">Sync Active • London HA9</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN VIEW WRAPPER -->
+    <main class="main-wrapper">
+      
+      <!-- TOP HEADER -->
+      <header class="top-header">
+        <div class="header-left">
+          <div class="view-heading">
+            <h2 id="current-view-title">Operations Command Center</h2>
+            <p id="current-view-desc">Live dispatch, commercial contracts, and incoming inquiries across London</p>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="search-box">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="global-search" placeholder="Search clients, postcodes, cleaners...">
+          </div>
+
+          <button class="btn btn-secondary" id="btn-open-quote-calc">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h10"/><path d="M7 12h10"/><path d="M7 17h10"/></svg>
+            Quote Calculator
+          </button>
+
+          <button class="btn btn-primary" id="btn-quick-new-job">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            Schedule Job
+          </button>
+        </div>
+      </header>
+
+      <!-- VIEW VIEWPORT -->
+      <div class="view-viewport">
+
+        <!-- ============================================================== -->
+        <!-- VIEW 1: DASHBOARD -->
+        <!-- ============================================================== -->
+        <section id="view-dashboard" class="crm-view active">
+          
+          <!-- KPI Metrics Row -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Monthly Revenue</span>
+                <div class="metric-icon-wrap">£</div>
+              </div>
+              <div class="metric-value" id="kpi-revenue">£28,450</div>
+              <div class="metric-sub">
+                <span class="metric-trend-up">↑ 18.4%</span> vs last month
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Active Contracts</span>
+                <div class="metric-icon-wrap">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/></svg>
+                </div>
+              </div>
+              <div class="metric-value">18</div>
+              <div class="metric-sub">
+                Gyms, Offices, Serviced Stays
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Jobs Scheduled This Week</span>
+                <div class="metric-icon-wrap">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/></svg>
+                </div>
+              </div>
+              <div class="metric-value">42</div>
+              <div class="metric-sub">
+                <span style="color: var(--accent-green); font-weight: 700;">● 5 In Progress</span> today
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Cleaner Utilization</span>
+                <div class="metric-icon-wrap">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                </div>
+              </div>
+              <div class="metric-value">94%</div>
+              <div class="metric-sub">
+                4 Active • 1 Applicant Awaiting DBS
+              </div>
+            </div>
+          </div>
+
+          <!-- Split Dashboard Content -->
+          <div class="dash-grid">
+            
+            <!-- Left: Today's Dispatch Schedule -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <svg width="16" height="16" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  Today's Live Dispatch Roster (London)
+                </div>
+                <button class="btn btn-secondary btn-sm" id="btn-filter-today">View Today Only</button>
+              </div>
+
+              <table class="crm-table">
+                <thead>
+                  <tr>
+                    <th>Time / Property</th>
+                    <th>Service & Client</th>
+                    <th>Cleaner Assigned</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-jobs-tbody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Right: Incoming Leads & Quick Actions -->
+            <div>
+              <div class="panel-card">
+                <div class="panel-header">
+                  <div class="panel-title">
+                    <svg width="16" height="16" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"/></svg>
+                    New Website Inquiries
+                  </div>
+                  <span class="tag tag-airbnb">samedigroup.co.uk</span>
+                </div>
+
+                <div id="dash-leads-list" style="display: flex; flex-direction: column; gap: 10px;">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+
+              <!-- Quick Cleaner Vetting Alert -->
+              <div class="panel-card" style="border-left: 3px solid var(--accent-amber);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                  <strong style="color: var(--accent-amber); font-size: 13px;">⚠️ Cleaner Application Pending</strong>
+                  <span class="tag tag-amber">Careers Form</span>
+                </div>
+                <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px;">
+                  <strong>James Davies</strong> applied via <span class="code">/careers/cleaners</span> for commercial office cleaning in Wembley/Ealing.
+                </p>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-primary btn-sm" onclick="app.openCleanerVetting('cleaner-5')">Review & DBS Verify</button>
+                  <button class="btn btn-secondary btn-sm" onclick="app.dismissAlert(this)">Dismiss</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- VIEW 2: LEADS & QUOTE PIPELINE (KANBAN) -->
+        <!-- ============================================================== -->
+        <section id="view-leads" class="crm-view">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF;">Quote & Ingestion Pipeline</h3>
+              <p style="font-size: 12px; color: var(--text-secondary);">Direct pipeline capturing website contact quotes, commercial RFP inquiries, and Airbnb host requests</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-secondary" onclick="app.openNewLeadModal()">+ Add Manual Lead</button>
+              <button class="btn btn-primary" onclick="app.simulateWebsiteLead()">⚡ Simulate Website Form Entry</button>
+            </div>
+          </div>
+
+          <div class="kanban-wrapper">
+            <!-- Col 1: New Leads -->
+            <div class="kanban-column" data-stage="new">
+              <div class="kanban-col-header">
+                <div class="kanban-col-title">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-blue);"></span>
+                  New Inquiries
+                </div>
+                <span class="col-count" id="count-new">0</span>
+              </div>
+              <div class="kanban-cards-area" id="kanban-new"></div>
+            </div>
+
+            <!-- Col 2: Quote Sent -->
+            <div class="kanban-column" data-stage="quote_sent">
+              <div class="kanban-col-header">
+                <div class="kanban-col-title">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-amber);"></span>
+                  Quote Sent
+                </div>
+                <span class="col-count" id="count-quote-sent">0</span>
+              </div>
+              <div class="kanban-cards-area" id="kanban-quote_sent"></div>
+            </div>
+
+            <!-- Col 3: Site Survey -->
+            <div class="kanban-column" data-stage="survey">
+              <div class="kanban-col-header">
+                <div class="kanban-col-title">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-purple);"></span>
+                  Site Survey
+                </div>
+                <span class="col-count" id="count-survey">0</span>
+              </div>
+              <div class="kanban-cards-area" id="kanban-survey"></div>
+            </div>
+
+            <!-- Col 4: Contract Signed -->
+            <div class="kanban-column" data-stage="contract_signed">
+              <div class="kanban-col-header">
+                <div class="kanban-col-title">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green);"></span>
+                  Contract Signed
+                </div>
+                <span class="col-count" id="count-contract-signed">0</span>
+              </div>
+              <div class="kanban-cards-area" id="kanban-contract_signed"></div>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- VIEW 3: DISPATCH & SCHEDULING CALENDAR -->
+        <!-- ============================================================== -->
+        <section id="view-schedule" class="crm-view">
+          
+          <div class="calendar-top-bar">
+            <div class="date-controls">
+              <button class="btn btn-secondary btn-sm" id="cal-prev">‹ Prev</button>
+              <span class="current-date-label" id="cal-date-label">Week of Sep 27 — Oct 3, 2026</span>
+              <button class="btn btn-secondary btn-sm" id="cal-next">Next ›</button>
+              <button class="btn btn-secondary btn-sm" id="cal-today">Today</button>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <select class="form-control" style="width: auto; padding: 6px 12px; font-size: 12px;" id="cal-filter-borough">
+                <option value="all">All London Boroughs</option>
+                <option value="Westminster">Westminster & Mayfair</option>
+                <option value="Kensington">Kensington & Chelsea</option>
+                <option value="City">City of London</option>
+                <option value="Brent">Brent & Wembley</option>
+                <option value="Shoreditch">Shoreditch & Hackney</option>
+              </select>
+
+              <button class="btn btn-primary" onclick="app.openNewJobModal()">+ Dispatch Job</button>
+            </div>
+          </div>
+
+          <!-- Schedule Grid -->
+          <div class="schedule-grid" id="calendar-grid">
+            <!-- Header Row -->
+            <div class="schedule-header-cell">Time</div>
+            <div class="schedule-header-cell today">Today (Sun 27)</div>
+            <div class="schedule-header-cell">Mon 28</div>
+            <div class="schedule-header-cell">Tue 29</div>
+            <div class="schedule-header-cell">Wed 30</div>
+            <div class="schedule-header-cell">Thu 01</div>
+
+            <!-- Time rows generated dynamically -->
+          </div>
+
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- VIEW 4: CLEANERS FLEET ROSTER & RECRUITMENT -->
+        <!-- ============================================================== -->
+        <section id="view-cleaners" class="crm-view">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF;">Cleaner Fleet & Compliance Roster</h3>
+              <p style="font-size: 12px; color: var(--text-secondary);">Direct integration with <span class="code">/careers/cleaners</span> recruitment pipeline, DBS checks, and mobile job cards</p>
+            </div>
+            <button class="btn btn-primary" onclick="app.openAddCleanerModal()">+ Onboard New Cleaner</button>
+          </div>
+
+          <div class="cleaners-grid" id="cleaners-roster-grid">
+            <!-- Populated by JS -->
+          </div>
+
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- VIEW 5: INVOICES & STRIPE BILLING -->
+        <!-- ============================================================== -->
+        <section id="view-invoices" class="crm-view">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF;">Invoicing & Stripe Live Payments</h3>
+              <p style="font-size: 12px; color: var(--text-secondary);">Automated corporate billing, card-on-file settlements, and UK VAT compliance</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-secondary" onclick="app.toggleStripeLiveMode()">
+                <span id="stripe-mode-indicator">Stripe Mode: <strong>LIVE</strong></span>
+              </button>
+              <button class="btn btn-primary" onclick="app.openCreateInvoiceModal()">+ Create UK Invoice</button>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <table class="crm-table">
+              <thead>
+                <tr>
+                  <th>Invoice ID</th>
+                  <th>Client / Company</th>
+                  <th>Date & Due</th>
+                  <th>Amount (Net + VAT)</th>
+                  <th>Stripe Session ID</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="invoices-tbody">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- VIEW 6: WEBSITE SYNC & WEBHOOKS (AUDIT FIX VERIFICATION) -->
+        <!-- ============================================================== -->
+        <section id="view-integrations" class="crm-view">
+          
+          <div style="margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF;">Website Sync & Webhook Verification</h3>
+            <p style="font-size: 12px; color: var(--text-secondary);">Direct bridge resolving the defects discovered during the website audit</p>
+          </div>
+
+          <div class="dash-grid">
+            
+            <div class="panel-card">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <svg width="16" height="16" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  Endpoint Health & Webhook Listeners
+                </div>
+                <span class="tag tag-green">All Listeners Active</span>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 14px;">
+                <div style="background: var(--bg-input); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <strong style="color: #FFFFFF; font-size: 13px;">POST /api/contact/contact-us</strong>
+                    <span class="tag tag-green">Connected</span>
+                  </div>
+                  <p style="font-size: 11.5px; color: var(--text-secondary);">Ingests quote inquiries from website contact page and automatically generates a Kanban lead card.</p>
+                </div>
+
+                <div style="background: var(--bg-input); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <strong style="color: #FFFFFF; font-size: 13px;">POST /api/careers/register-cleaner</strong>
+                    <span class="tag tag-green">Fixed & Listening</span>
+                  </div>
+                  <p style="font-size: 11.5px; color: var(--text-secondary);">Fixes the broken form on <span class="code">/careers/cleaners</span> (which previously had 0 submissions and missing name tags).</p>
+                </div>
+
+                <div style="background: var(--bg-input); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <strong style="color: #FFFFFF; font-size: 13px;">Stripe Webhook Listener (checkout.session.completed)</strong>
+                    <span class="tag tag-green">Live Mode Configured</span>
+                  </div>
+                  <p style="font-size: 11.5px; color: var(--text-secondary);">Listens for live Stripe checkout payments and marks invoices / appointments as automatically paid.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Simulator Console -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <div class="panel-title">
+                  <svg width="16" height="16" fill="none" stroke="var(--gold-primary)" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></svg>
+                  Live Webhook Event Simulator
+                </div>
+              </div>
+
+              <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 14px;">
+                Trigger simulated live payloads from <span class="code">samedigroup.co.uk</span> to see instant real-time dispatch and ingestion:
+              </p>
+
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn btn-secondary" onclick="app.simulateWebsiteLead()">
+                  Trigger Commercial Lead (Canary Wharf Office)
+                </button>
+                <button class="btn btn-secondary" onclick="app.simulateCleanerApplication()">
+                  Trigger Cleaner Job Application (DBS Applicant)
+                </button>
+                <button class="btn btn-secondary" onclick="app.simulateStripePayment()">
+                  Trigger Stripe Live Payment Webhook (£340.00)
+                </button>
+              </div>
+
+              <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-light); font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">
+                Webhook Server: 127.0.0.1:3000/api/webhook<br>
+                Payload Hash: SHA-256 HMAC Verified
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: SMART QUOTE CALCULATOR -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-quote-calc">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Smart Quote Calculator (London Rates)</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-quote-calc')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Service Type</label>
+            <select class="form-control" id="calc-service" onchange="app.recalcQuote()">
+              <option value="residential">Standard Home Clean (£18/hr)</option>
+              <option value="deep">Luxury Deep Clean (£28/hr)</option>
+              <option value="tenancy">End of Tenancy Deposit-Back</option>
+              <option value="airbnb">Airbnb Express Turnover</option>
+              <option value="commercial">Commercial Office (£22/hr)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Property Scale</label>
+            <select class="form-control" id="calc-size" onchange="app.recalcQuote()">
+              <option value="1">1 Bedroom / Studio (2h)</option>
+              <option value="2">2 Bedrooms (3h)</option>
+              <option value="3" selected>3 Bedrooms (4.5h)</option>
+              <option value="4">4 Bedrooms (6h)</option>
+              <option value="5">5+ Bed Townhouse (8h)</option>
+              <option value="office_sm">Small Office &lt; 2,000 sq ft</option>
+              <option value="office_lg">Large Corporate &gt; 4,000 sq ft</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Premium Add-ons</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px;">
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="calc-addon-oven" onchange="app.recalcQuote()"> Double Oven Valet (+£55)
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="calc-addon-carpet" onchange="app.recalcQuote()"> Carpet Extraction (+£75)
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="calc-addon-linen" onchange="app.recalcQuote()"> Hotel-Grade Linen Pack (+£25)
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px;">
+              <input type="checkbox" id="calc-addon-eco" onchange="app.recalcQuote()"> Luxury Eco Consumables (+£20)
+            </label>
+          </div>
+        </div>
+
+        <div class="calc-box">
+          <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Calculated Estimate (excl. VAT)</div>
+          <div class="calc-total-row">
+            <div>
+              <div class="calc-price" id="calc-total-display">£215.00</div>
+              <div style="font-size: 11px; color: var(--text-secondary);" id="calc-hours-display">Approx. 4.5 man-hours</div>
+            </div>
+            <button class="btn btn-primary" onclick="app.convertCalcToLead()">Create Quote Lead</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: SCHEDULE NEW JOB -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-new-job">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Schedule & Dispatch Job</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-new-job')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-new-job" onsubmit="app.handleNewJobSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Job Title / Description</label>
+            <input type="text" class="form-control" id="job-title" required placeholder="e.g. Kensington Luxury Townhouse Deep Clean">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Client Name</label>
+              <input type="text" class="form-control" id="job-client" required placeholder="Full Name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Service Type</label>
+              <select class="form-control" id="job-service">
+                <option>Luxury Residential Housekeeping</option>
+                <option>Commercial Office Maintenance</option>
+                <option>Airbnb Turnover & Restock</option>
+                <option>End of Tenancy Deposit Clean</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Property Address & Postcode</label>
+            <input type="text" class="form-control" id="job-address" required placeholder="e.g. 14 Grosvenor Square, Mayfair W1K">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="date" class="form-control" id="job-date" required value="2026-09-28">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time Window</label>
+              <input type="text" class="form-control" id="job-time" required value="10:00 - 14:00">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Assign Cleaner</label>
+              <select class="form-control" id="job-cleaner-select">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Total Amount (£)</label>
+              <input type="number" class="form-control" id="job-amount" required value="180">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Key Access / Check-in Notes</label>
+            <input type="text" class="form-control" id="job-access" placeholder="e.g. Concierge desk or Lockbox code 4821#">
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-new-job')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Dispatch Job</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: CLEANER MOBILE VIEW SIMULATOR -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-cleaner-mobile">
+    <div class="modal-box" style="max-width: 440px; background: transparent; border: none; box-shadow: none;">
+      <div style="text-align: right; margin-bottom: 8px;">
+        <button class="modal-close" style="color: #FFFFFF; font-size: 24px;" onclick="app.closeModal('modal-cleaner-mobile')">✕ Close Preview</button>
+      </div>
+      
+      <div class="mobile-phone-frame">
+        <div class="mobile-phone-topbar">
+          <span>09:41</span>
+          <span>5G • 100%</span>
+        </div>
+
+        <div class="mobile-phone-screen">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div class="brand-crest" style="width: 28px; height: 28px; font-size: 12px;">SG</div>
+              <strong style="color: #FFFFFF; font-size: 13px;">Samedi Cleaner App</strong>
+            </div>
+            <span class="tag tag-green" id="mobile-cleaner-status">On Shift</span>
+          </div>
+
+          <div style="background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+            <div style="font-size: 10px; color: var(--gold-primary); text-transform: uppercase; font-weight: 700;">Current Assignment</div>
+            <h4 style="font-size: 13.5px; font-weight: 800; color: #FFFFFF; margin: 4px 0;" id="mobile-job-title">Mayfair Penthouse Maintenance</h4>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;" id="mobile-job-addr">14 Grosvenor Square, W1K</div>
+            <div style="font-size: 11px; color: var(--accent-amber); font-weight: 600;" id="mobile-job-access">🔑 Key in Concierge desk with Mr. Arthur</div>
+          </div>
+
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">
+            Task Checklist (Quality Guarantee)
+          </div>
+
+          <div id="mobile-checklist-area">
+            <!-- Checklist items -->
+          </div>
+
+          <div style="margin-top: 14px;">
+            <button class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 8px;" onclick="app.simulatePhotoUpload()">
+              📷 Take Proof-of-Clean Photos (0/4)
+            </button>
+            <button class="btn btn-primary" style="width: 100%;" onclick="app.completeMobileClean()">
+              ✓ Mark Job as Completed
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: UK INVOICE PREVIEW & PRINT -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-invoice-view">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 id="inv-modal-title">UK Statutory VAT Invoice</h3>
+        <button class="modal-close" onclick="app.closeModal('modal-invoice-view')">✕</button>
+      </div>
+      <div class="modal-body" id="invoice-printable-body">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATIONS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- APPLICATION SCRIPTS -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

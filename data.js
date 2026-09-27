@@ -1,0 +1,382 @@
+// Default seed data for Samedi Group Operations CRM
+const DEFAULT_DATA = {
+  company: {
+    name: "Samedi Group",
+    tagline: "Premium Facilities & Property Services London",
+    address: "Olympic Way, Wembley, London HA9 0JT",
+    phone: "020 3918 4069",
+    whatsapp: "+44 7902 415157",
+    email: "operations@samedigroup.co.uk",
+    website: "https://samedigroup.co.uk",
+    currency: "GBP",
+    currencySymbol: "£",
+    stripeMode: "live", // Toggle between live & test
+    crn: "14892015",
+    vat: "GB 421 8902 11"
+  },
+  stats: {
+    monthlyRevenue: 28450,
+    activeContracts: 18,
+    jobsThisWeek: 42,
+    cleanerUtilization: 94,
+    unassignedJobs: 3,
+    newLeadsCount: 5
+  },
+  leads: [
+    {
+      id: "lead-101",
+      name: "David Sterling",
+      company: "Sterling Capital Management",
+      email: "d.sterling@sterlingcap.co.uk",
+      phone: "020 7946 0912",
+      type: "Commercial",
+      propertyType: "Corporate Office (4,200 sq ft)",
+      borough: "City of London (EC2)",
+      service: "Daily Contract Cleaning",
+      budget: 2400,
+      frequency: "5 days/week (Nightly)",
+      stage: "survey", // new, quote_sent, survey, contract_signed, lost
+      source: "Website Contact Form",
+      notes: "High security building. Requires 2 DBS-vetted cleaners from 19:30 onwards.",
+      createdAt: "2026-09-26T14:30:00Z"
+    },
+    {
+      id: "lead-102",
+      name: "Elena Rostova",
+      company: "Private Homeowner",
+      email: "elena.rostova@icloud.com",
+      phone: "07911 234890",
+      type: "Residential",
+      propertyType: "5-Bed Victorian Townhouse",
+      borough: "Kensington & Chelsea (W8)",
+      service: "Luxury Deep Clean & Window Care",
+      budget: 460,
+      frequency: "One-Off Deep Clean",
+      stage: "quote_sent",
+      source: "Online Booking Wizard",
+      notes: "Delicate marble flooring and heritage woodwork. Needs eco-friendly neutral pH products.",
+      createdAt: "2026-09-26T17:15:00Z"
+    },
+    {
+      id: "lead-103",
+      name: "Oliver Chen",
+      company: "Stays & Co Properties",
+      email: "oliver@staysandco.co.uk",
+      phone: "07855 901234",
+      type: "Airbnb / Short-Let",
+      propertyType: "Portfolio of 4 Luxury Apartments",
+      borough: "Shoreditch & Islington (EC1 / N1)",
+      service: "Airbnb Turnover & Hotel-Grade Linen",
+      budget: 1800,
+      frequency: "Turnover upon checkout (10:00 - 15:00)",
+      stage: "new",
+      source: "Website Airbnb Page",
+      notes: "Strict 10am check-out to 3pm check-in turnover window. Requires laundry collection.",
+      createdAt: "2026-09-27T02:10:00Z"
+    },
+    {
+      id: "lead-104",
+      name: "Sophia Kensington-Smith",
+      company: "Tenant / Private",
+      email: "sophia.ks@gmail.com",
+      phone: "07700 900543",
+      type: "Residential",
+      propertyType: "3-Bed Penthouse",
+      borough: "Fulham (SW6)",
+      service: "End of Tenancy Deposit-Back Clean",
+      budget: 320,
+      frequency: "One-Off",
+      stage: "contract_signed",
+      source: "Direct WhatsApp",
+      notes: "Inventory clerk check scheduled for Oct 3. Guarantee certificate requested.",
+      createdAt: "2026-09-25T11:00:00Z"
+    },
+    {
+      id: "lead-105",
+      name: "Marcus Aurelius Gyms",
+      company: "Pulse Fitness Club",
+      email: "manager@pulsefitwembley.com",
+      phone: "020 8902 3344",
+      type: "Commercial",
+      propertyType: "2-Floor Modern Gym & Spa",
+      borough: "Brent / Wembley (HA9)",
+      service: "Hygienic Sanitisation & Locker Clean",
+      budget: 1650,
+      frequency: "7 days/week (05:00 - 07:00)",
+      stage: "quote_sent",
+      source: "Website Contact Form",
+      notes: "Heavy focus on shower tiles, steam room and cardio machine disinfection.",
+      createdAt: "2026-09-26T09:40:00Z"
+    }
+  ],
+  cleaners: [
+    {
+      id: "cleaner-1",
+      name: "Sarah Jenkins",
+      role: "Lead Housekeeper & Team Leader",
+      rating: 5.0,
+      jobsCompleted: 342,
+      phone: "07823 456789",
+      email: "sarah.j@samedigroup.co.uk",
+      boroughs: ["Kensington & Chelsea", "Westminster", "Fulham"],
+      skills: ["Luxury Residential", "Airbnb Turnover", "Fine Marble & Antique Care"],
+      status: "Active",
+      dbsStatus: "Verified (Enhanced)",
+      idVerified: true,
+      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+      hourlyRate: 18.50
+    },
+    {
+      id: "cleaner-2",
+      name: "Marcus Vance",
+      role: "Senior Facilities Specialist",
+      rating: 4.9,
+      jobsCompleted: 418,
+      phone: "07912 345678",
+      email: "marcus.v@samedigroup.co.uk",
+      boroughs: ["City of London", "Canary Wharf", "Camden"],
+      skills: ["Commercial Offices", "Post-Construction", "Floor Buffing & Extraction"],
+      status: "Active",
+      dbsStatus: "Verified (Standard)",
+      idVerified: true,
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+      hourlyRate: 19.00
+    },
+    {
+      id: "cleaner-3",
+      name: "Elena Petrova",
+      role: "End of Tenancy & Deep Clean Pro",
+      rating: 4.9,
+      jobsCompleted: 285,
+      phone: "07645 678901",
+      email: "elena.p@samedigroup.co.uk",
+      boroughs: ["Brent", "Hammersmith", "Wembley"],
+      skills: ["Oven & Appliance Valet", "Deposit-Back Guarantee", "Airbnb Express"],
+      status: "Active",
+      dbsStatus: "Verified (Standard)",
+      idVerified: true,
+      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80",
+      hourlyRate: 17.50
+    },
+    {
+      id: "cleaner-4",
+      name: "Tariq Mansoor",
+      role: "Specialist Carpet & Upholstery Tech",
+      rating: 4.8,
+      jobsCompleted: 194,
+      phone: "07734 567890",
+      email: "tariq.m@samedigroup.co.uk",
+      boroughs: ["All London Boroughs"],
+      skills: ["Hot Water Extraction", "Stain Removal", "Commercial Steam Cleaning"],
+      status: "On Shift",
+      dbsStatus: "Verified (Enhanced)",
+      idVerified: true,
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      hourlyRate: 21.00
+    },
+    {
+      id: "cleaner-5",
+      name: "James Davies (Applicant)",
+      role: "Applicant — Commercial / Residential",
+      rating: 0.0,
+      jobsCompleted: 0,
+      phone: "07998 123456",
+      email: "james.davies99@outlook.com",
+      boroughs: ["Wembley", "Ealing", "Acton"],
+      skills: ["Commercial Cleaning", "Office Maintenance"],
+      status: "Applicant Awaiting Vetting",
+      dbsStatus: "Under Review",
+      idVerified: false,
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      hourlyRate: 15.00
+    }
+  ],
+  jobs: [
+    {
+      id: "job-801",
+      title: "Mayfair Penthouse Bi-Weekly Maintenance",
+      client: "Lord & Lady Harrington",
+      service: "Luxury Residential Housekeeping",
+      address: "14 Grosvenor Square, Mayfair, London W1K 6JH",
+      borough: "Westminster",
+      date: "2026-09-27",
+      time: "09:00 - 13:00",
+      cleanerId: "cleaner-1",
+      cleanerName: "Sarah Jenkins",
+      status: "In Progress", // Scheduled, In Progress, Completed, Cancelled
+      amount: 195,
+      paid: true,
+      paymentMethod: "Stripe Card on File",
+      checkInCode: "Key in Concierge desk with Mr. Arthur",
+      checklist: [
+        { task: "Master bedroom bed linen ironed & replaced", done: true },
+        { task: "En-suite marble surfaces polished with neutral cleaner", done: true },
+        { task: "Kitchen counters and island degreased", done: false },
+        { task: "Hardwood floor vacuum and microfiber damp mop", done: false }
+      ]
+    },
+    {
+      id: "job-802",
+      title: "Airbnb Express Turnover (Guest Check-in 15:00)",
+      client: "Oliver Chen (Stays & Co)",
+      service: "Airbnb Turnover & Restock",
+      address: "Flat 4, 82 Redchurch St, Shoreditch, London E2 7DD",
+      borough: "Tower Hamlets / Hackney",
+      date: "2026-09-27",
+      time: "10:30 - 13:30",
+      cleanerId: "cleaner-3",
+      cleanerName: "Elena Petrova",
+      status: "Scheduled",
+      amount: 110,
+      paid: true,
+      paymentMethod: "Stripe Online",
+      checkInCode: "Lockbox 4912# next to front door",
+      checklist: [
+        { task: "Strip and bag used hotel linens", done: false },
+        { task: "Sanitise bathroom and replace luxury toiletries", done: false },
+        { task: "Empty fridge & leave complimentary welcome basket", done: false },
+        { task: "Take 4 proof-of-clean photos for host dashboard", done: false }
+      ]
+    },
+    {
+      id: "job-803",
+      title: "Sterling Capital Daily Evening Office Clean",
+      client: "David Sterling",
+      service: "Commercial Office Maintenance",
+      address: "Level 18, 100 Bishopsgate, London EC2N 4AG",
+      borough: "City of London",
+      date: "2026-09-27",
+      time: "19:00 - 21:30",
+      cleanerId: "cleaner-2",
+      cleanerName: "Marcus Vance",
+      status: "Scheduled",
+      amount: 580,
+      paid: true,
+      paymentMethod: "Monthly Direct Debit (Stripe B2B)",
+      checkInCode: "Security pass ready at reception badge counter",
+      checklist: [
+        { task: "Empty all 45 desk bins and separate recycling", done: false },
+        { task: "Disinfect boardroom glass tables and teleconference screens", done: false },
+        { task: "Replenish kitchen consumables and run dishwasher cycle", done: false },
+        { task: "Vacuum all high-traffic carpets and mop ceramic tiles", done: false }
+      ]
+    },
+    {
+      id: "job-804",
+      title: "Wembley Pulse Gym Sanitisation Routine",
+      client: "Pulse Fitness Club",
+      service: "Commercial Gym Sanitisation",
+      address: "24 Olympic Way, Wembley, London HA9 0NP",
+      borough: "Brent",
+      date: "2026-09-28",
+      time: "05:00 - 07:30",
+      cleanerId: "cleaner-2",
+      cleanerName: "Marcus Vance",
+      status: "Scheduled",
+      amount: 320,
+      paid: true,
+      paymentMethod: "Commercial Contract",
+      checkInCode: "Rear staff entrance, keypad code 8821*",
+      checklist: [
+        { task: "Medical-grade wipe down of gym equipment touchpoints", done: false },
+        { task: "Steam mop locker room floors and shower cubicles", done: false }
+      ]
+    },
+    {
+      id: "job-805",
+      title: "Fulham End of Tenancy Full Appliance Valet",
+      client: "Sophia Kensington-Smith",
+      service: "End of Tenancy Deposit Clean",
+      address: "Apt 12, Rivermead Court, Ranelagh Gardens, Fulham SW6 3UP",
+      borough: "Hammersmith & Fulham",
+      date: "2026-09-29",
+      time: "08:30 - 15:30",
+      cleanerId: "cleaner-4",
+      cleanerName: "Tariq Mansoor",
+      status: "Scheduled",
+      amount: 340,
+      paid: false,
+      paymentMethod: "Awaiting Final Balance",
+      checkInCode: "Keys collectable from Dexters Estate Agents Fulham",
+      checklist: [
+        { task: "Deep clean double oven, extractor and filter degrease", done: false },
+        { task: "Descale all taps, shower heads and sanitaryware", done: false },
+        { task: "Carpet hot water extraction in bedrooms 1 and 2", done: false },
+        { task: "Clean inside all fitted wardrobes and kitchen drawers", done: false }
+      ]
+    }
+  ],
+  invoices: [
+    {
+      id: "INV-2026-041",
+      jobId: "job-801",
+      clientName: "Lord & Lady Harrington",
+      company: "Private Residence",
+      email: "harrington.estates@private.co.uk",
+      date: "2026-09-25",
+      dueDate: "2026-10-02",
+      items: [
+        { desc: "Bi-Weekly Luxury Housekeeping (4 Hours)", qty: 1, rate: 160.00, total: 160.00 },
+        { desc: "Eco-Friendly Premium Consumables Package", qty: 1, rate: 35.00, total: 35.00 }
+      ],
+      subtotal: 195.00,
+      vat: 39.00,
+      total: 234.00,
+      status: "Paid",
+      stripeSessionId: "cs_live_9a87d6f5e4c3b2a1"
+    },
+    {
+      id: "INV-2026-042",
+      jobId: "job-803",
+      clientName: "David Sterling",
+      company: "Sterling Capital Management",
+      email: "accounts@sterlingcap.co.uk",
+      date: "2026-09-26",
+      dueDate: "2026-10-10",
+      items: [
+        { desc: "Commercial Office Maintenance Contract (September)", qty: 1, rate: 2400.00, total: 2400.00 }
+      ],
+      subtotal: 2400.00,
+      vat: 480.00,
+      total: 2880.00,
+      status: "Sent",
+      stripeSessionId: "cs_live_1b2c3d4e5f6a7b8c"
+    },
+    {
+      id: "INV-2026-043",
+      jobId: "job-802",
+      clientName: "Oliver Chen",
+      company: "Stays & Co",
+      email: "billing@staysandco.co.uk",
+      date: "2026-09-26",
+      dueDate: "2026-09-28",
+      items: [
+        { desc: "Airbnb Turnover Clean (2-Bed Shoreditch)", qty: 1, rate: 90.00, total: 90.00 },
+        { desc: "Hotel-Grade King Linen & Towels Rental", qty: 1, rate: 20.00, total: 20.00 }
+      ],
+      subtotal: 110.00,
+      vat: 22.00,
+      total: 132.00,
+      status: "Paid",
+      stripeSessionId: "cs_live_5k4j3h2g1f0e9d8c"
+    },
+    {
+      id: "INV-2026-044",
+      jobId: "job-805",
+      clientName: "Sophia Kensington-Smith",
+      company: "Private",
+      email: "sophia.ks@gmail.com",
+      date: "2026-09-27",
+      dueDate: "2026-09-29",
+      items: [
+        { desc: "Full End of Tenancy Clean (3-Bed)", qty: 1, rate: 260.00, total: 260.00 },
+        { desc: "Professional Carpet Extraction (2 Bedrooms)", qty: 1, rate: 80.00, total: 80.00 }
+      ],
+      subtotal: 340.00,
+      vat: 68.00,
+      total: 408.00,
+      status: "Pending",
+      stripeSessionId: "cs_live_7x8y9z0a1b2c3d4e"
+    }
+  ]
+};
