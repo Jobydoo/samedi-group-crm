@@ -1542,3 +1542,112 @@ body {
   }
 }
 
+/* ==========================================================================
+   MODULE: INVENTORY & STOCK CONTROL (SUIVI & MOUVEMENT DE STOCK)
+   ========================================================================== */
+.inv-tab-btn {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.inv-tab-btn:hover {
+  color: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+.inv-tab-btn.active {
+  background: var(--primary-green);
+  color: #FFFFFF;
+  border-color: var(--primary-green);
+  box-shadow: 0 2px 6px rgba(11, 46, 26, 0.2);
+}
+
+/* Stock Meters */
+.stock-meter-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 130px;
+}
+
+.stock-meter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.stock-meter-bar {
+  height: 6px;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.stock-meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.stock-meter-fill.healthy {
+  background: #10B981;
+}
+
+.stock-meter-fill.warning {
+  background: #F59E0B;
+}
+
+.stock-meter-fill.danger {
+  background: #EF4444;
+}
+
+/* Movement Type Badges */
+.mvt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.mvt-badge-in {
+  background: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.mvt-badge-out {
+  background: #EFF6FF;
+  color: #1E40AF;
+  border: 1px solid #BFDBFE;
+}
+
+.mvt-badge-adj {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+.sku-badge {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary-green);
+  background: #F0FDF4;
+  border: 1px solid #DCFCE7;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+

@@ -378,5 +378,178 @@ const DEFAULT_DATA = {
       status: "Pending",
       stripeSessionId: "cs_live_7x8y9z0a1b2c3d4e"
     }
+  ],
+  inventory: [
+    {
+      id: "SKU-CHM-01",
+      name: "Eco Antibacterial Surface Sanitiser (5L)",
+      category: "Chemicals",
+      unit: "Canisters (5L)",
+      currentStock: 14,
+      minThreshold: 10,
+      unitCost: 18.50,
+      location: "Central Depot (Shelf A-02)",
+      lastRestocked: "2026-09-24",
+      supplier: "Clover Chemicals UK",
+      status: "In Stock"
+    },
+    {
+      id: "SKU-CHM-02",
+      name: "Heavy-Duty Commercial Kitchen Degreaser (5L)",
+      category: "Chemicals",
+      unit: "Canisters (5L)",
+      currentStock: 4,
+      minThreshold: 8,
+      unitCost: 22.00,
+      location: "Central Depot (Shelf A-04)",
+      lastRestocked: "2026-09-18",
+      supplier: "Clover Chemicals UK",
+      status: "Low Stock"
+    },
+    {
+      id: "SKU-EQP-01",
+      name: "Numatic Henry Commercial Vacuum (HVR200)",
+      category: "Equipment",
+      unit: "Units",
+      currentStock: 8,
+      minThreshold: 4,
+      unitCost: 149.00,
+      location: "Equipment Bay (Van Allocation)",
+      lastRestocked: "2026-09-10",
+      supplier: "Numatic International Ltd",
+      status: "In Stock"
+    },
+    {
+      id: "SKU-EQP-02",
+      name: "Kärcher Professional Puzzi Carpet Extractor",
+      category: "Equipment",
+      unit: "Units",
+      currentStock: 3,
+      minThreshold: 2,
+      unitCost: 595.00,
+      location: "Equipment Bay B",
+      lastRestocked: "2026-08-15",
+      supplier: "Kärcher UK",
+      status: "In Stock"
+    },
+    {
+      id: "SKU-CON-01",
+      name: "Nitrile Powder-Free Disposable Gloves (Box of 100)",
+      category: "Consumables",
+      unit: "Boxes",
+      currentStock: 32,
+      minThreshold: 20,
+      unitCost: 6.80,
+      location: "Consumables Rack C-01",
+      lastRestocked: "2026-09-22",
+      supplier: "Bunzl Cleaning & Hygiene",
+      status: "In Stock"
+    },
+    {
+      id: "SKU-CON-02",
+      name: "Colour-Coded Microfibre Cleaning Cloths (Pack of 50)",
+      category: "Consumables",
+      unit: "Packs",
+      currentStock: 5,
+      minThreshold: 12,
+      unitCost: 14.50,
+      location: "Consumables Rack C-03",
+      lastRestocked: "2026-09-12",
+      supplier: "Bunzl Cleaning & Hygiene",
+      status: "Low Stock"
+    },
+    {
+      id: "SKU-LIN-01",
+      name: "Hotel Luxury King Bedding & Linen Set",
+      category: "Linen & Airbnb",
+      unit: "Sets",
+      currentStock: 24,
+      minThreshold: 15,
+      unitCost: 38.00,
+      location: "Linen Storage Bay D",
+      lastRestocked: "2026-09-25",
+      supplier: "Mitre Linen London",
+      status: "In Stock"
+    },
+    {
+      id: "SKU-CON-03",
+      name: "Heavy-Duty 100L Black Compactor Sacks (Roll of 50)",
+      category: "Consumables",
+      unit: "Rolls",
+      currentStock: 2,
+      minThreshold: 10,
+      unitCost: 11.20,
+      location: "Consumables Rack C-05",
+      lastRestocked: "2026-09-05",
+      supplier: "Bunzl Cleaning & Hygiene",
+      status: "Reorder Required"
+    }
+  ],
+  stockMovements: [
+    {
+      id: "SM-2026-089",
+      date: "2026-09-27T08:30:00Z",
+      itemId: "SKU-CHM-01",
+      itemName: "Eco Antibacterial Surface Sanitiser (5L)",
+      type: "outbound",
+      quantity: 2,
+      recipient: "Sarah Jenkins (Lead Housekeeper)",
+      destination: "Mayfair Penthouse Maintenance (Job #job-801)",
+      reason: "Weekly job dispatch to cleaner van",
+      balanceAfter: 14,
+      operator: "Alexander Wright"
+    },
+    {
+      id: "SM-2026-088",
+      date: "2026-09-26T15:45:00Z",
+      itemId: "SKU-LIN-01",
+      itemName: "Hotel Luxury King Bedding & Linen Set",
+      type: "outbound",
+      quantity: 4,
+      recipient: "Elena Petrova",
+      destination: "Airbnb Express Turnover Shoreditch (Job #job-802)",
+      reason: "Guest turnover replenishment",
+      balanceAfter: 24,
+      operator: "Alexander Wright"
+    },
+    {
+      id: "SM-2026-087",
+      date: "2026-09-25T11:10:00Z",
+      itemId: "SKU-CON-01",
+      itemName: "Nitrile Powder-Free Gloves (Box of 100)",
+      type: "inbound",
+      quantity: 20,
+      recipient: "Central Depot (Wembley HA9)",
+      destination: "Inbound Purchase Order #PO-8821",
+      reason: "Supplier delivery from Bunzl UK",
+      balanceAfter: 32,
+      operator: "Alexander Wright"
+    },
+    {
+      id: "SM-2026-086",
+      date: "2026-09-25T09:00:00Z",
+      itemId: "SKU-CHM-02",
+      itemName: "Heavy-Duty Commercial Kitchen Degreaser (5L)",
+      type: "outbound",
+      quantity: 2,
+      recipient: "Marcus Vance",
+      destination: "Wembley Pulse Gym Sanitisation (Job #job-804)",
+      reason: "Commercial deep clean dispatch",
+      balanceAfter: 4,
+      operator: "Alexander Wright"
+    },
+    {
+      id: "SM-2026-085",
+      date: "2026-09-24T16:20:00Z",
+      itemId: "SKU-CON-03",
+      itemName: "Heavy-Duty 100L Black Compactor Sacks",
+      type: "outbound",
+      quantity: 3,
+      recipient: "Tariq Mansoor",
+      destination: "Fulham End of Tenancy Valet (Job #job-805)",
+      reason: "Tenancy clearance supplies",
+      balanceAfter: 2,
+      operator: "Alexander Wright"
+    }
   ]
 };

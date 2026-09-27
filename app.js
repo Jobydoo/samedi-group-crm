@@ -12,15 +12,68 @@ class SamediCRM {
 
   // State Persistence via LocalStorage
   loadState() {
+    let state = null;
     const saved = localStorage.getItem("samedi_crm_state");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        state = JSON.parse(saved);
       } catch (e) {
         console.error("Failed to parse saved state, loading defaults:", e);
       }
     }
-    return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    if (!state) {
+      state = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+    if (!state.inventory || state.inventory.length === 0) {
+      state.inventory = JSON.parse(JSON.stringify(DEFAULT_DATA.inventory || []));
+    }
+    if (!state.stockMovements || state.stockMovements.length === 0) {
+      state.stockMovements = JSON.parse(JSON.stringify(DEFAULT_DATA.stockMovements || []));
+    }
+
+    // Comprehensive normalization for inventory items
+    state.inventory = (state.inventory || []).map(item => {
+      const sku = item.sku || item.id || "SKU-001";
+      const stock = (item.quantity !== undefined) ? Number(item.quantity) : ((item.currentStock !== undefined) ? Number(item.currentStock) : 0);
+      const min = (item.minLevel !== undefined) ? Number(item.minLevel) : ((item.minThreshold !== undefined) ? Number(item.minThreshold) : 5);
+      const cost = parseFloat(item.unitCost) || 0;
+      return {
+        ...item,
+        id: sku,
+        sku: sku,
+        quantity: stock,
+        currentStock: stock,
+        minLevel: min,
+        minThreshold: min,
+        unitCost: cost
+      };
+    });
+
+    // Comprehensive normalization for stock movements
+    state.stockMovements = (state.stockMovements || []).map(m => {
+      const sku = m.sku || m.itemId || "SKU-001";
+      const name = m.name || m.itemName || "Inventory Material";
+      const ts = m.timestamp || (m.date ? (m.date.includes('T') ? m.date.replace('T', ' ').substring(0, 16) : m.date) : "2026-09-27 10:00");
+      const notes = m.notes || m.reason || "Routine depot movement";
+      const auth = m.authorizedBy || m.operator || "Operations Manager";
+      const recipient = m.recipient || m.destination || "Field Operations";
+      return {
+        ...m,
+        sku: sku,
+        itemId: sku,
+        name: name,
+        itemName: name,
+        timestamp: ts,
+        date: m.date || ts,
+        notes: notes,
+        reason: notes,
+        authorizedBy: auth,
+        operator: auth,
+        recipient: recipient
+      };
+    });
+
+    return state;
   }
 
   saveState() {
@@ -93,6 +146,7 @@ class SamediCRM {
       leads: { title: "Quote & Ingestion Pipeline", desc: "Real-time leads from samedigroup.co.uk contact forms and booking inquiries" },
       schedule: { title: "Dispatch & Schedule Calendar", desc: "Cleaner fleet roster, Airbnb turnover windows (10:00 - 15:00), and commercial contracts" },
       cleaners: { title: "Cleaners & Field Staff", desc: "DBS compliance, skill sets, live on-shift status, and mobile job cards" },
+      inventory: { title: "Inventory & Stock Control (Depot & Field Materials)", desc: "Real-time stock tracking, safety reorder limits, and material dispatch audit trail (Suivi et Mouvement de Stock)" },
       invoices: { title: "Invoices & Stripe Live Payments", desc: "UK statutory invoicing, VAT compliance, and Stripe live settlements" },
       integrations: { title: "Website Webhooks & Sync", desc: "Real-time sync resolving issues discovered during website audit" }
     };
@@ -118,6 +172,9 @@ class SamediCRM {
       case "cleaners":
         this.renderCleaners();
         break;
+      case "inventory":
+        this.renderInventory();
+        break;
       case "invoices":
         this.renderInvoices();
         break;
@@ -131,6 +188,7 @@ class SamediCRM {
     const leadsCount = this.data.leads.length;
     const jobsCount = this.data.jobs.length;
     const applicantsCount = this.data.cleaners.filter(c => c.status.includes("Applicant")).length;
+    const lowStockCount = (this.data.inventory || []).filter(item => item.quantity <= item.minLevel).length;
 
     const bLeads = document.getElementById("badge-leads");
     if (bLeads) bLeads.innerText = leadsCount;
@@ -145,6 +203,16 @@ class SamediCRM {
         bCleaners.innerText = `${applicantsCount} New`;
       } else {
         bCleaners.style.display = "none";
+      }
+    }
+
+    const bStock = document.getElementById("badge-stock-alert");
+    if (bStock) {
+      if (lowStockCount > 0) {
+        bStock.style.display = "inline-block";
+        bStock.innerText = `${lowStockCount} Low`;
+      } else {
+        bStock.style.display = "none";
       }
     }
   }
@@ -913,7 +981,13 @@ class SamediCRM {
     input.addEventListener("input", (e) => {
       const q = e.target.value.toLowerCase().trim();
       if (!q) {
+        this.invSearchQuery = "";
         this.renderCurrentView();
+        return;
+      }
+      if (this.currentView === "inventory") {
+        this.invSearchQuery = q;
+        this.renderInventoryTable();
         return;
       }
       // Simple search across jobs & leads
@@ -1269,6 +1343,485 @@ class SamediCRM {
         this.showToast("Showing all scheduled jobs");
       }
     });
+  }
+
+  // ==========================================================================
+  // VIEW: INVENTORY & STOCK CONTROL (SUIVI & MOUVEMENT DE STOCK)
+  // ==========================================================================
+  renderInventory() {
+    if (!this.data.inventory || this.data.inventory.length === 0) {
+      this.data.inventory = JSON.parse(JSON.stringify(DEFAULT_DATA.inventory || []));
+    }
+    if (!this.data.stockMovements || this.data.stockMovements.length === 0) {
+      this.data.stockMovements = JSON.parse(JSON.stringify(DEFAULT_DATA.stockMovements || []));
+    }
+
+    // 1. Calculate KPI Metrics
+    const totalVal = this.data.inventory.reduce((sum, item) => sum + (item.quantity * item.unitCost), 0);
+    const totalLines = this.data.inventory.length;
+    const lowStockItems = this.data.inventory.filter(item => item.quantity <= item.minLevel);
+    const lowStockCount = lowStockItems.length;
+    const movementsCount = this.data.stockMovements.length;
+
+    const elVal = document.getElementById("inv-total-value");
+    if (elVal) elVal.innerText = "£" + totalVal.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const elLines = document.getElementById("inv-total-items");
+    if (elLines) elLines.innerText = `${totalLines} Lines`;
+
+    const elLow = document.getElementById("inv-low-stock-count");
+    if (elLow) {
+      elLow.innerText = `${lowStockCount} ${lowStockCount === 1 ? 'Alert' : 'Alerts'}`;
+      elLow.style.color = lowStockCount > 0 ? "#DC2626" : "var(--accent-green)";
+    }
+
+    const elMvts = document.getElementById("inv-movements-count");
+    if (elMvts) elMvts.innerText = `${movementsCount} Records`;
+
+    // 2. Render Sub-tables
+    this.renderInventoryTable();
+    this.renderStockMovementsTable();
+    this.updateBadges();
+  }
+
+  switchInventoryTab(tabName) {
+    const btnStock = document.getElementById("tab-btn-stock");
+    const btnMvts = document.getElementById("tab-btn-movements");
+    const contentStock = document.getElementById("inv-tab-content-stock");
+    const contentMvts = document.getElementById("inv-tab-content-movements");
+
+    if (tabName === "stock") {
+      if (btnStock) btnStock.classList.add("active");
+      if (btnMvts) btnMvts.classList.remove("active");
+      if (contentStock) contentStock.style.display = "block";
+      if (contentMvts) contentMvts.style.display = "none";
+    } else {
+      if (btnStock) btnStock.classList.remove("active");
+      if (btnMvts) btnMvts.classList.add("active");
+      if (contentStock) contentStock.style.display = "none";
+      if (contentMvts) contentMvts.style.display = "block";
+    }
+  }
+
+  filterInventoryCategory(category) {
+    this.invCategoryFilter = category;
+    const container = document.getElementById("inv-category-filters");
+    if (container) {
+      container.querySelectorAll("button").forEach(btn => {
+        const text = btn.innerText.trim();
+        const isMatch = (category === 'all' && text === 'All') || text === category;
+        btn.style.opacity = isMatch ? "1" : "0.5";
+        btn.style.boxShadow = isMatch ? "0 0 0 2px var(--primary-green)" : "none";
+      });
+    }
+    this.renderInventoryTable();
+  }
+
+  filterInventoryStatus(status) {
+    this.invStatusFilter = status;
+    this.renderInventoryTable();
+  }
+
+  filterMovementType(type) {
+    this.movementTypeFilter = type;
+    this.renderStockMovementsTable();
+  }
+
+  renderInventoryTable() {
+    const tbody = document.getElementById("inventory-tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const catFilter = this.invCategoryFilter || "all";
+    const statusFilter = this.invStatusFilter || "all";
+    const search = (this.invSearchQuery || "").toLowerCase();
+
+    let items = this.data.inventory || [];
+
+    if (catFilter !== "all") {
+      items = items.filter(item => item.category === catFilter);
+    }
+
+    if (statusFilter === "low") {
+      items = items.filter(item => item.quantity <= item.minLevel);
+    } else if (statusFilter === "ok") {
+      items = items.filter(item => item.quantity > item.minLevel);
+    }
+
+    if (search) {
+      items = items.filter(item => 
+        item.name.toLowerCase().includes(search) || 
+        item.sku.toLowerCase().includes(search) || 
+        item.supplier.toLowerCase().includes(search) ||
+        item.location.toLowerCase().includes(search)
+      );
+    }
+
+    if (items.length === 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="8" style="text-align: center; padding: 24px; color: var(--text-muted);">No inventory items match current filter criteria.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    const categoryTagMap = {
+      "Chemicals": "tag-commercial",
+      "Equipment": "tag-residential",
+      "Consumables": "tag-amber",
+      "Linen & Airbnb": "tag-airbnb"
+    };
+
+    items.forEach(item => {
+      const tr = document.createElement("tr");
+      const tagClass = categoryTagMap[item.category] || "tag-green";
+      const totalVal = (item.quantity * item.unitCost).toFixed(2);
+
+      // Stock health and progress fill
+      const targetMax = Math.max(item.minLevel * 2.5, item.quantity, 1);
+      const pct = Math.min(100, Math.round((item.quantity / targetMax) * 100));
+      let fillClass = "healthy";
+      let statusHtml = '<span class="tag tag-green">✓ Healthy</span>';
+
+      if (item.quantity === 0) {
+        fillClass = "danger";
+        statusHtml = '<span class="tag tag-red">Out of Stock</span>';
+      } else if (item.quantity <= item.minLevel) {
+        fillClass = "warning";
+        statusHtml = '<span class="tag tag-amber">⚠️ Low Stock</span>';
+      }
+
+      tr.innerHTML = `
+        <td><span class="sku-badge">${item.sku}</span></td>
+        <td>
+          <strong style="color: var(--text-main); font-size: 12.5px;">${item.name}</strong><br>
+          <small style="color: var(--text-secondary);">${item.unit} • Supplier: ${item.supplier}</small>
+        </td>
+        <td>
+          <span class="tag ${tagClass}">${item.category}</span><br>
+          <small style="color: var(--text-muted); font-size: 10.5px;">📍 ${item.location}</small>
+        </td>
+        <td>
+          <div class="stock-meter-wrap">
+            <div class="stock-meter-header">
+              <span><strong>${item.quantity}</strong> ${item.unit}</span>
+              <span style="color: var(--text-muted); font-size: 10px;">Min: ${item.minLevel}</span>
+            </div>
+            <div class="stock-meter-bar">
+              <div class="stock-meter-fill ${fillClass}" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        </td>
+        <td style="font-weight: 600;">£${item.unitCost.toFixed(2)}</td>
+        <td style="font-weight: 700; color: var(--primary-green);">£${totalVal}</td>
+        <td>${statusHtml}</td>
+        <td>
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <button class="btn btn-secondary btn-sm" onclick="app.openStockMovementModal('${item.sku}')" title="Record Movement">
+              Dispatch / In
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="app.quickRestockItem('${item.sku}', 10)" title="Quick restock +10 units" style="padding: 4px 8px; font-weight: 700;">
+              +10
+            </button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  renderStockMovementsTable() {
+    const tbody = document.getElementById("movements-tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const typeFilter = this.movementTypeFilter || "all";
+    let list = this.data.stockMovements || [];
+
+    if (typeFilter !== "all") {
+      list = list.filter(m => m.type === typeFilter);
+    }
+
+    if (list.length === 0) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="9" style="text-align: center; padding: 24px; color: var(--text-muted);">No stock movements recorded under this filter.</td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    list.forEach(m => {
+      const tr = document.createElement("tr");
+      let typeBadge = "";
+      let qtyDisplay = "";
+
+      if (m.type === "outbound") {
+        typeBadge = `<span class="mvt-badge mvt-badge-out">▲ Dispatch (Out)</span>`;
+        qtyDisplay = `<strong style="color: #1E40AF;">-${m.quantity} ${m.unit || ''}</strong>`;
+      } else if (m.type === "inbound") {
+        typeBadge = `<span class="mvt-badge mvt-badge-in">▼ Restock (In)</span>`;
+        qtyDisplay = `<strong style="color: #065F46;">+${m.quantity} ${m.unit || ''}</strong>`;
+      } else {
+        typeBadge = `<span class="mvt-badge mvt-badge-adj">■ Adjustment</span>`;
+        qtyDisplay = `<strong style="color: #92400E;">±${m.quantity} ${m.unit || ''}</strong>`;
+      }
+
+      tr.innerHTML = `
+        <td><strong style="font-family: monospace; font-size: 11px; color: var(--primary-green);">${m.id}</strong></td>
+        <td style="font-size: 11px; color: var(--text-secondary); white-space: nowrap;">${m.timestamp}</td>
+        <td>
+          <strong style="color: var(--text-main); font-size: 12px;">${m.name}</strong><br>
+          <span class="sku-badge" style="font-size: 10px; padding: 1px 4px;">${m.sku}</span>
+        </td>
+        <td>${typeBadge}</td>
+        <td>${qtyDisplay}</td>
+        <td><strong>${m.balanceAfter}</strong> <small style="color: var(--text-muted);">${m.unit || ''}</small></td>
+        <td style="font-size: 11.5px; color: var(--text-main);">${m.recipient || '—'}</td>
+        <td style="font-size: 11px; color: var(--text-secondary);">${m.notes || '—'}</td>
+        <td style="font-size: 11px; color: var(--text-muted);">${m.authorizedBy || 'Operations Lead'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  openStockMovementModal(preselectedSku) {
+    const select = document.getElementById("mvt-item-select");
+    if (!select) return;
+    select.innerHTML = "";
+
+    const items = this.data.inventory || [];
+    items.forEach(item => {
+      const sku = item.sku || item.id;
+      const stock = (item.quantity !== undefined) ? item.quantity : (item.currentStock || 0);
+      const opt = document.createElement("option");
+      opt.value = sku;
+      opt.innerText = `${sku} — ${item.name} (${stock} in depot)`;
+      if (preselectedSku && (item.sku === preselectedSku || item.id === preselectedSku)) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    });
+
+    const qtyInput = document.getElementById("mvt-qty-input");
+    if (qtyInput) qtyInput.value = "2";
+
+    const reasonInput = document.getElementById("mvt-reason-input");
+    if (reasonInput) reasonInput.value = "";
+
+    const recipientInput = document.getElementById("mvt-recipient-input");
+    if (recipientInput) recipientInput.value = "";
+
+    this.toggleMovementFields();
+    this.updateMovementItemPreview();
+    this.openModal("modal-stock-movement");
+  }
+
+  updateMovementItemPreview() {
+    const select = document.getElementById("mvt-item-select");
+    const preview = document.getElementById("mvt-current-balance-preview");
+    if (!select || !preview) return;
+
+    const sku = select.value;
+    const item = (this.data.inventory || []).find(i => (i.sku === sku || i.id === sku));
+    if (item) {
+      const stock = (item.quantity !== undefined) ? item.quantity : (item.currentStock || 0);
+      const min = (item.minLevel !== undefined) ? item.minLevel : (item.minThreshold || 5);
+      preview.innerText = `${stock} ${item.unit} (Safety min: ${min})`;
+      preview.style.color = stock <= min ? "#DC2626" : "var(--primary-green)";
+    }
+  }
+
+  toggleMovementFields() {
+    const typeSelect = document.getElementById("mvt-type-select");
+    const recipientLabel = document.getElementById("mvt-recipient-label");
+    const recipientInput = document.getElementById("mvt-recipient-input");
+    if (!typeSelect || !recipientLabel || !recipientInput) return;
+
+    const val = typeSelect.value;
+    if (val === "inbound") {
+      recipientLabel.innerText = "Supplier Delivery Note / PO Number";
+      recipientInput.placeholder = "e.g. Bunzl Hygiene Delivery #DO-9921 / PO-4412";
+    } else if (val === "outbound") {
+      recipientLabel.innerText = "Recipient Cleaner or Destination Job";
+      recipientInput.placeholder = "e.g. Sarah Jenkins • Mayfair Penthouse (Job #job-801)";
+    } else {
+      recipientLabel.innerText = "Stock Audit Note & Location";
+      recipientInput.placeholder = "e.g. Annual physical count check by Operations Lead";
+    }
+  }
+
+  handleStockMovementSubmit(e) {
+    e.preventDefault();
+    const sku = document.getElementById("mvt-item-select").value;
+    const type = document.getElementById("mvt-type-select").value;
+    const qty = parseInt(document.getElementById("mvt-qty-input").value, 10);
+    const recipient = document.getElementById("mvt-recipient-input").value.trim() || (type === "inbound" ? "Depot Restock" : "Field Operations");
+    const reason = document.getElementById("mvt-reason-input").value.trim() || "Routine operational movement";
+
+    const item = (this.data.inventory || []).find(i => (i.sku === sku || i.id === sku));
+    if (!item) {
+      this.showToast("Error: Selected inventory item was not found.");
+      return;
+    }
+
+    const currentStock = (item.quantity !== undefined) ? item.quantity : (item.currentStock || 0);
+
+    if (type === "outbound" && qty > currentStock) {
+      alert(`⚠️ Insufficient Stock: Current depot balance for ${item.name} is only ${currentStock} ${item.unit}. You requested ${qty}.`);
+      return;
+    }
+
+    if (type === "outbound") {
+      item.quantity = currentStock - qty;
+      item.currentStock = item.quantity;
+    } else if (type === "inbound") {
+      item.quantity = currentStock + qty;
+      item.currentStock = item.quantity;
+      item.lastRestocked = new Date().toISOString().split("T")[0];
+    } else if (type === "adjustment") {
+      item.quantity = qty;
+      item.currentStock = item.quantity;
+    }
+
+    const newMvt = {
+      id: "SM-" + new Date().getFullYear() + "-" + String(100 + (this.data.stockMovements ? this.data.stockMovements.length : 0) + 1).padStart(3, '0'),
+      sku: item.sku || item.id,
+      itemId: item.sku || item.id,
+      name: item.name,
+      itemName: item.name,
+      unit: item.unit,
+      type: type,
+      quantity: qty,
+      balanceAfter: item.quantity,
+      recipient: recipient,
+      destination: recipient,
+      notes: reason,
+      reason: reason,
+      authorizedBy: this.currentUser ? this.currentUser.name : "Alexander Wright",
+      operator: this.currentUser ? this.currentUser.name : "Alexander Wright",
+      timestamp: new Date().toISOString().replace("T", " ").substring(0, 16),
+      date: new Date().toISOString()
+    };
+
+    if (!this.data.stockMovements) this.data.stockMovements = [];
+    this.data.stockMovements.unshift(newMvt);
+
+    this.saveState();
+    this.closeModal("modal-stock-movement");
+    this.renderInventory();
+    this.showToast(`✓ Recorded ${type.toUpperCase()} movement of ${qty} ${item.unit} for ${item.name}`);
+  }
+
+  openAddInventoryModal() {
+    const form = document.getElementById("form-add-inventory");
+    if (form) form.reset();
+    this.openModal("modal-add-inventory");
+  }
+
+  handleAddInventorySubmit(e) {
+    e.preventDefault();
+    const name = document.getElementById("new-item-name").value.trim();
+    const category = document.getElementById("new-item-category").value;
+    const unit = document.getElementById("new-item-unit").value.trim() || "Units";
+    const stock = parseInt(document.getElementById("new-item-stock").value, 10) || 0;
+    const threshold = parseInt(document.getElementById("new-item-threshold").value, 10) || 5;
+    const cost = parseFloat(document.getElementById("new-item-cost").value) || 0;
+    const location = document.getElementById("new-item-location").value.trim() || "Central Depot";
+    const supplier = document.getElementById("new-item-supplier").value.trim() || "UK Trade Supplier";
+
+    const prefixMap = {
+      "Chemicals": "CHM",
+      "Equipment": "EQP",
+      "Consumables": "CON",
+      "Linen & Airbnb": "LIN"
+    };
+
+    const prefix = prefixMap[category] || "CON";
+    const sku = `SKU-${prefix}-${String(300 + (this.data.inventory ? this.data.inventory.length : 0) + 1).slice(-2)}`;
+
+    const newItem = {
+      id: sku,
+      sku: sku,
+      name: name,
+      category: category,
+      unit: unit,
+      quantity: stock,
+      currentStock: stock,
+      minLevel: threshold,
+      minThreshold: threshold,
+      unitCost: cost,
+      supplier: supplier,
+      location: location,
+      lastRestocked: new Date().toISOString().split("T")[0],
+      status: stock === 0 ? "Out of Stock" : (stock <= threshold ? "Low Stock" : "In Stock")
+    };
+
+    if (!this.data.inventory) this.data.inventory = [];
+    this.data.inventory.push(newItem);
+
+    if (stock > 0) {
+      const initialMvt = {
+        id: "SM-" + new Date().getFullYear() + "-" + String(100 + (this.data.stockMovements ? this.data.stockMovements.length : 0) + 1).padStart(3, '0'),
+        sku: sku,
+        itemId: sku,
+        name: name,
+        itemName: name,
+        unit: unit,
+        type: "inbound",
+        quantity: stock,
+        balanceAfter: stock,
+        recipient: `Depot Intake (${supplier})`,
+        destination: location,
+        notes: "Initial inventory registration & stock intake",
+        reason: "Initial inventory registration & stock intake",
+        authorizedBy: this.currentUser ? this.currentUser.name : "Alexander Wright",
+        operator: this.currentUser ? this.currentUser.name : "Alexander Wright",
+        timestamp: new Date().toISOString().replace("T", " ").substring(0, 16),
+        date: new Date().toISOString()
+      };
+      if (!this.data.stockMovements) this.data.stockMovements = [];
+      this.data.stockMovements.unshift(initialMvt);
+    }
+
+    this.saveState();
+    this.closeModal("modal-add-inventory");
+    this.renderInventory();
+    this.showToast(`✓ Added new SKU ${sku}: ${name} to stock roster`);
+  }
+
+  quickRestockItem(sku, qty = 10) {
+    const item = (this.data.inventory || []).find(i => (i.sku === sku || i.id === sku));
+    if (!item) return;
+
+    const currentStock = (item.quantity !== undefined) ? item.quantity : (item.currentStock || 0);
+    item.quantity = currentStock + qty;
+    item.currentStock = item.quantity;
+    item.lastRestocked = new Date().toISOString().split("T")[0];
+
+    const mvt = {
+      id: "SM-" + new Date().getFullYear() + "-" + String(100 + (this.data.stockMovements ? this.data.stockMovements.length : 0) + 1).padStart(3, '0'),
+      sku: item.sku || item.id,
+      itemId: item.sku || item.id,
+      name: item.name,
+      itemName: item.name,
+      unit: item.unit,
+      type: "inbound",
+      quantity: qty,
+      balanceAfter: item.quantity,
+      recipient: `Supplier Delivery (${item.supplier})`,
+      destination: "Central Depot",
+      notes: "1-Click Depot Quick Restock (+10)",
+      reason: "1-Click Depot Quick Restock (+10)",
+      authorizedBy: this.currentUser ? this.currentUser.name : "Alexander Wright",
+      operator: this.currentUser ? this.currentUser.name : "Alexander Wright",
+      timestamp: new Date().toISOString().replace("T", " ").substring(0, 16),
+      date: new Date().toISOString()
+    };
+
+    if (!this.data.stockMovements) this.data.stockMovements = [];
+    this.data.stockMovements.unshift(mvt);
+
+    this.saveState();
+    this.renderInventory();
+    this.showToast(`✓ Restocked +${qty} ${item.unit} for ${item.name} (New depot balance: ${item.quantity})`);
   }
 }
 

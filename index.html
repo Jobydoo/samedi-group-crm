@@ -94,6 +94,12 @@
             <span class="nav-badge alert" id="badge-cleaner-alert">1 New</span>
           </a>
 
+          <a class="nav-item" data-view="inventory">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+            Inventory & Stock
+            <span class="nav-badge alert" id="badge-stock-alert">3 Low</span>
+          </a>
+
           <div class="nav-section-title">Finance & Billing</div>
 
           <a class="nav-item" data-view="invoices">
@@ -428,6 +434,168 @@
 
           <div class="cleaners-grid" id="cleaners-roster-grid">
             <!-- Populated by JS -->
+          </div>
+
+        </section>
+
+
+        <!-- ============================================================== -->
+        <!-- VIEW: INVENTORY & STOCK CONTROL (SUIVI & MOUVEMENT DE STOCK) -->
+        <!-- ============================================================== -->
+        <section id="view-inventory" class="crm-view">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main);">Inventory & Stock Control (Depot & Field Materials)</h3>
+              <p style="font-size: 12px; color: var(--text-secondary);">Real-time tracking of cleaning chemicals, machinery, linen & PPE with audit-proof dispatch movements</p>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="btn btn-secondary" onclick="app.openStockMovementModal()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+                Record Stock Movement
+              </button>
+              <button class="btn btn-primary" onclick="app.openAddInventoryModal()">
+                + Add Inventory Item
+              </button>
+            </div>
+          </div>
+
+          <!-- Inventory KPI Cards -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Total Depot Stock Value</span>
+                <div class="metric-icon-wrap">£</div>
+              </div>
+              <div class="metric-value" id="inv-total-value">£8,420.50</div>
+              <div class="metric-sub">Asset valuation at cost</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Active SKUs Tracked</span>
+                <div class="metric-icon-wrap">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="inv-total-items">8 Lines</div>
+              <div class="metric-sub">Across 4 major categories</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Low Stock & Reorders</span>
+                <div class="metric-icon-wrap" style="background: #FEE2E2; border-color: #FCA5A5; color: #DC2626;">⚠️</div>
+              </div>
+              <div class="metric-value" style="color: #DC2626;" id="inv-low-stock-count">3 Alert</div>
+              <div class="metric-sub">Below safety threshold</div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-title">Dispatches This Week</span>
+                <div class="metric-icon-wrap">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="inv-movements-count">31 Units</div>
+              <div class="metric-sub">To London job sites & vans</div>
+            </div>
+          </div>
+
+          <!-- Tabs: 1. Stock Inventory (Suivi) | 2. Movement History (Mouvements) -->
+          <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-light); padding-bottom: 8px; flex-wrap: wrap;">
+            <button class="btn btn-secondary inv-tab-btn active" id="tab-btn-stock" onclick="app.switchInventoryTab('stock')">
+              📦 Stock Inventory Roster (Levels & Safety Limits)
+            </button>
+            <button class="btn btn-secondary inv-tab-btn" id="tab-btn-movements" onclick="app.switchInventoryTab('movements')">
+              🔄 Stock Movements & Dispatch Audit Log
+            </button>
+          </div>
+
+          <!-- TAB 1: STOCK INVENTORY LEVELS (SUIVI DE STOCK) -->
+          <div id="inv-tab-content-stock">
+            <div class="panel-card">
+              <div class="panel-header" style="flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Category:</span>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="inv-category-filters">
+                    <button class="tag tag-green" onclick="app.filterInventoryCategory('all')">All</button>
+                    <button class="tag tag-commercial" onclick="app.filterInventoryCategory('Chemicals')">Chemicals</button>
+                    <button class="tag tag-residential" onclick="app.filterInventoryCategory('Equipment')">Equipment</button>
+                    <button class="tag tag-amber" onclick="app.filterInventoryCategory('Consumables')">Consumables</button>
+                    <button class="tag tag-airbnb" onclick="app.filterInventoryCategory('Linen & Airbnb')">Linen & Airbnb</button>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Status:</span>
+                  <select class="form-control" style="width: auto; padding: 4px 8px; font-size: 11.5px;" onchange="app.filterInventoryStatus(this.value)">
+                    <option value="all">All Statuses</option>
+                    <option value="low">Low & Out of Stock</option>
+                    <option value="ok">Healthy In Stock</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="overflow-x: auto;">
+                <table class="crm-table">
+                  <thead>
+                    <tr>
+                      <th>SKU Code</th>
+                      <th>Material / Item Description</th>
+                      <th>Category & Location</th>
+                      <th>Stock Level & Threshold</th>
+                      <th>Unit Cost</th>
+                      <th>Total Value</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventory-tbody">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: STOCK MOVEMENTS (MOUVEMENT DE STOCK) -->
+          <div id="inv-tab-content-movements" style="display: none;">
+            <div class="panel-card">
+              <div class="panel-header" style="flex-wrap: wrap; gap: 10px;">
+                <div class="panel-title">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+                  Real-Time Stock Movement Audit Log
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  <button class="tag tag-green" onclick="app.filterMovementType('all')">All Movements</button>
+                  <button class="tag tag-commercial" onclick="app.filterMovementType('outbound')">Outbound (Job Dispatch)</button>
+                  <button class="tag tag-residential" onclick="app.filterMovementType('inbound')">Inbound (Restock)</button>
+                </div>
+              </div>
+
+              <div style="overflow-x: auto;">
+                <table class="crm-table">
+                  <thead>
+                    <tr>
+                      <th>Movement Ref</th>
+                      <th>Timestamp</th>
+                      <th>Item Description</th>
+                      <th>Movement Type</th>
+                      <th>Quantity</th>
+                      <th>Balance After</th>
+                      <th>Recipient / Job Site</th>
+                      <th>Reason / Notes</th>
+                      <th>Authorized By</th>
+                    </tr>
+                  </thead>
+                  <tbody id="movements-tbody">
+                    <!-- Populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
         </section>
@@ -1088,6 +1256,145 @@
       </div>
     </div>
   </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: RECORD STOCK MOVEMENT (INBOUND RESTOCK / OUTBOUND DISPATCH) -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-stock-movement">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <div>
+          <h3>Record Stock Movement</h3>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Dispatch materials to cleaners/jobs or register supplier restocks</p>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-stock-movement')">✕</button>
+      </div>
+
+      <form id="form-stock-movement" onsubmit="app.handleStockMovementSubmit(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Inventory Item</label>
+            <select class="form-control" id="mvt-item-select" required onchange="app.updateMovementItemPreview()">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Movement Type</label>
+              <select class="form-control" id="mvt-type-select" required onchange="app.toggleMovementFields()">
+                <option value="outbound">Outbound (Dispatch to Job / Cleaner)</option>
+                <option value="inbound">Inbound (Supplier Delivery / Restock)</option>
+                <option value="adjustment">Stock Adjustment (Audit / Damaged)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Quantity</label>
+              <input type="number" class="form-control" id="mvt-qty-input" required min="1" value="2">
+            </div>
+          </div>
+
+          <div class="form-group" id="mvt-recipient-group">
+            <label class="form-label" id="mvt-recipient-label">Recipient Cleaner or Destination Job</label>
+            <input type="text" class="form-control" id="mvt-recipient-input" placeholder="e.g. Sarah Jenkins • Mayfair Penthouse (Job #job-801)">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Movement Reason & Notes</label>
+            <input type="text" class="form-control" id="mvt-reason-input" required placeholder="e.g. Regular shift consumables dispatch, PO #PO-8821">
+          </div>
+
+          <div style="background: var(--bg-input); border: 1px solid var(--border-light); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 11.5px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-secondary);">Current Depot Balance:</span>
+            <strong style="color: var(--primary-green); font-size: 13px;" id="mvt-current-balance-preview">14 Canisters (5L)</strong>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-stock-movement')">Cancel</button>
+            <button type="submit" class="btn btn-primary">✓ Confirm & Record Movement</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ADD NEW INVENTORY ITEM -->
+  <!-- ============================================================== -->
+  <div class="modal-overlay" id="modal-add-inventory">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <div>
+          <h3>+ Add New Inventory Item</h3>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">Register a new chemical, equipment or consumable SKU into stock tracking</p>
+        </div>
+        <button class="modal-close" onclick="app.closeModal('modal-add-inventory')">✕</button>
+      </div>
+
+      <form id="form-add-inventory" onsubmit="app.handleAddInventorySubmit(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Item / Material Description</label>
+            <input type="text" class="form-control" id="new-item-name" required placeholder="e.g. Glass & Window Sparkling Concentrated Cleaner (5L)">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-control" id="new-item-category" required>
+                <option value="Chemicals">Chemicals</option>
+                <option value="Equipment">Equipment & Machinery</option>
+                <option value="Consumables">Consumables & PPE</option>
+                <option value="Linen & Airbnb">Linen & Airbnb Supplies</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Packaging / Unit Type</label>
+              <input type="text" class="form-control" id="new-item-unit" required placeholder="e.g. Canisters (5L), Boxes, Units">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Initial Stock Quantity</label>
+              <input type="number" class="form-control" id="new-item-stock" required min="0" value="10">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Min Alert Threshold</label>
+              <input type="number" class="form-control" id="new-item-threshold" required min="1" value="5">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Unit Cost (£ Excl. VAT)</label>
+              <input type="number" step="0.01" class="form-control" id="new-item-cost" required value="16.50">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Depot Storage Location</label>
+              <input type="text" class="form-control" id="new-item-location" required placeholder="e.g. Central Depot (Shelf A-06)">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Preferred Supplier</label>
+            <input type="text" class="form-control" id="new-item-supplier" required placeholder="e.g. Clover Chemicals UK, Bunzl Hygiene">
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('modal-add-inventory')">Cancel</button>
+            <button type="submit" class="btn btn-primary">+ Save & Track in Inventory</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
 
   <!-- TOAST NOTIFICATIONS -->
   <div class="toast-container" id="toast-container"></div>
