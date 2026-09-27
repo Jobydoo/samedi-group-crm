@@ -86,6 +86,7 @@
               <h1>Samedi Group</h1>
               <span>Operations & CRM</span>
             </div>
+            <button class="btn-sidebar-close" onclick="document.querySelector('.sidebar').classList.remove('mobile-open')">✕</button>
           </div>
         </div>
 
@@ -143,12 +144,17 @@
       </div>
     </aside>
 
+    <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="document.querySelector('.sidebar').classList.remove('mobile-open')"></div>
+
     <!-- MAIN VIEW WRAPPER -->
     <main class="main-wrapper">
       
       <!-- TOP HEADER -->
       <header class="top-header">
         <div class="header-left">
+          <button class="btn-sidebar-toggle" id="btn-sidebar-toggle" aria-label="Toggle navigation" onclick="document.querySelector('.sidebar').classList.toggle('mobile-open')">
+            <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
           <div class="view-heading">
             <h2 id="current-view-title">Operations Command Center</h2>
             <p id="current-view-desc">Live dispatch, commercial contracts, and incoming inquiries across London</p>
