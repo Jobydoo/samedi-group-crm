@@ -977,18 +977,6 @@ class SamediCRM {
       });
     }
 
-    // 1-Click Demo Login
-    const btnDemo = document.getElementById("btn-quick-demo-login");
-    if (btnDemo) {
-      btnDemo.addEventListener("click", () => {
-        const emailEl = document.getElementById("login-email");
-        const passEl = document.getElementById("login-password");
-        if (emailEl) emailEl.value = "admin@samedigroup.co.uk";
-        if (passEl) passEl.value = "Samedi2026!";
-        this.handleLogin();
-      });
-    }
-
     // Sign Out Button
     const btnLogout = document.getElementById("btn-logout");
     if (btnLogout) {
